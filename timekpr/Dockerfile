@@ -54,3 +54,6 @@ ENV FLASK_ENV=production
 
 # Copy root filesystem
 COPY rootfs /
+RUN chmod +x /etc/services.d/timekpr/run \
+    && chmod +x /etc/services.d/timekpr/finish \
+    && chmod +x /etc/services.d/watchdog/run
