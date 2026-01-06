@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: TimeKpr-nExT
-version: "0.0.15"
+version: "0.0.16"
 slug: timekpr
 description: Allows remote control of timekpr instances via web-ui
 url: "https://github.com/ezméghiányzik"
