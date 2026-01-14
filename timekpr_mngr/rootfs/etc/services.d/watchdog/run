@@ -3,11 +3,11 @@
 bashio::log.info "Watchdog service started"
 
 while true; do
-    if pgrep -f gunicorn >/dev/null; then
-      : # all is well  
-    else
-        bashio::log.error "Gunicorn not running"
-        exit 1
-    fi
+    #if pgrep -f gunicorn >/dev/null; then
+    #  : # all is well  
+    #else
+    #    bashio::log.error "Gunicorn not running"
+    #    exit 1
+    #fi
     sleep 30
 done
