@@ -10,7 +10,7 @@ arch:
   - amd64
 init: false
 ingress: true
-ingress_port: 5001
+ingress_port: 5002
 map:
   - share:rw
   - data:rw
