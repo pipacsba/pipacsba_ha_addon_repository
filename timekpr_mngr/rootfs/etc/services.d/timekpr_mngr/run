@@ -1,0 +1,39 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Start the example service
+# s6-overlay docs: https://github.com/just-containers/s6-overlay
+# ==============================================================================
+
+# Add your code here
+
+# Sets up the users .ssh folder to be persistent
+if ! bashio::fs.directory_exists /data/ssh; then
+    mkdir -p /data/ssh \
+        || bashio::exit.nok 'Failed to create a persistent ssh folder'
+
+fi
+chmod 700 /data/ssh \
+    || bashio::exit.nok \
+        'Failed setting permissions on persistent ssh folder'
+
+if bashio::config.has_value 'ssh_private_key'; then
+    bashio::log.info "store ssh_private_key"
+
+    rm -f /data/ssh/timekpr_ui_key
+    while read -r line; do
+        echo "$line" >> /data/ssh/timekpr_ui_key
+    done <<< "$(bashio::config 'ssh_private_key')"
+#   bashio::config 'ssh_private_key' > /data/ssh/timekpr_ui_key
+
+
+    chmod 600 /data/ssh/timekpr_ui_key
+fi
+
+git -C /app pull \
+    || bashio::exit.nok \
+        'Failed update application from github'
+
+## Run your program
+#exec /usr/bin/my_program
+python /app/main.py
+#gunicorn --bind 0.0.0.0:5001 hass_wrapper_gunicorn:app --chdir /app/ --timeout 60
