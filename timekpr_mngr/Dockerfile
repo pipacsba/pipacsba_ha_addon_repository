@@ -21,7 +21,6 @@ RUN \
         python3 \
         py3-pip \
         tzdata \
-        nginx \
     \
     && git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
