@@ -35,5 +35,5 @@ git -C /app pull \
 
 ## Run your program
 #exec /usr/bin/my_program
-uvicorn main:fastapi_app --host 0.0.0.0 --port 5002python /app/main.py
-
+#python /app/main.p
+uvicorn main:fastapi_app --host 0.0.0.0 --port 5002
