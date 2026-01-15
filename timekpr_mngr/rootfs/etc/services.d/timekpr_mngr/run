@@ -36,4 +36,4 @@ git -C /app pull \
 ## Run your program
 #exec /usr/bin/my_program
 #python /app/main.p
-uvicorn main:fastapi_app --host 0.0.0.0 --port 5002 --chdir /app/ 
+uvicorn main:fastapi_app --host 0.0.0.0 --port 5002 --app-dir /app/ 
