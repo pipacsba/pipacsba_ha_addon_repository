@@ -24,6 +24,7 @@ RUN \
     \
     && git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
+    && git pull \
     \
     && rm -f -r \
         /root/.cache \
