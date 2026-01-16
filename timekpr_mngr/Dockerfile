@@ -23,7 +23,7 @@ RUN \
         python3 \
         py3-pip \
         tzdata \
-        mime-support \
+        mailcap \
     \
     && git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
