@@ -32,9 +32,8 @@ RUN \
     && rm -f -r \
         /root/.cache \
         /root/.cmake \
-        /tmp/* \
-        /var/lib/apt/lists/*
-
+        /tmp/* 
+        
 RUN rm -rf /app/instance \
     && ln -s /data /app/instance
 
