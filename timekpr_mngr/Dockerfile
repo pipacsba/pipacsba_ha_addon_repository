@@ -23,6 +23,7 @@ RUN \
         python3 \
         py3-pip \
         tzdata \
+        mime-support \
     \
     && git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
@@ -31,7 +32,8 @@ RUN \
     && rm -f -r \
         /root/.cache \
         /root/.cmake \
-        /tmp/*
+        /tmp/* \
+        /var/lib/apt/lists/*
 
 RUN rm -rf /app/instance \
     && ln -s /data /app/instance
