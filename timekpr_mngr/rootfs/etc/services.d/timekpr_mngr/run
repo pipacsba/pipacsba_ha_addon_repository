@@ -36,4 +36,4 @@ git -C /app pull \
 ## Run your program
 #exec /usr/bin/my_program
 python /app/main2.py
-#uvicorn main:app --host 0.0.0.0 --port 5002 --ws-max-size 20971520 --app-dir /app --access-log --log-level debug
+#uvicorn main:app --host 0.0.0.0 --port 5002 --ws-max-size 209715200 --app-dir /app --access-log --log-level debug
