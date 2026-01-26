@@ -17,6 +17,7 @@ map:
   - data:rw
 options:
   ssh_private_key :
+  log_level: warning
 panel_icon: mdi:clock-in
 panel_title: timekpr-mngr
 #ports:
@@ -24,3 +25,6 @@ panel_title: timekpr-mngr
 #  5001/tcp: 5001
 schema:
   ssh_private_key: str
+  log_level: list(debug|info|warning|error|critical)?
+environment:
+  LOG_LEVEL: log_level
