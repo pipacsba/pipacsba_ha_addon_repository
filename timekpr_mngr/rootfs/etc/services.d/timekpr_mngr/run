@@ -29,6 +29,16 @@ if bashio::config.has_value 'ssh_private_key'; then
     chmod 600 /data/ssh_keys/timekpr_ui_key
 fi
 
+if bashio::config.has_value 'log_level'; then
+    LOG_LEVEL="$(bashio::config 'log_level')"
+else
+    LOG_LEVEL="info"
+fi
+
+export LOG_LEVEL
+bashio::log.info "Using LOG_LEVEL=${LOG_LEVEL}"
+
+
 git -C /app pull \
     || bashio::exit.nok \
         'Failed update application from github'
