@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: TimeKpr-Mngr
-version: "0.0.34"
+version: "0.0.35"
 slug: timekpr_mngr
 description: Allows remote control of timekpr instances
 url: "https://github.com/pipacsba/pipacsba_ha_addon_repository/tree/main/timekpr_mngr"
@@ -26,5 +26,3 @@ panel_title: timekpr-mngr
 schema:
   ssh_private_key: str
   log_level: list(debug|info|warning|error|critical)
-environment:
-  LOG_LEVEL: log_level
