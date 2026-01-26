@@ -26,5 +26,5 @@ panel_title: timekpr-mngr
 schema:
   ssh_private_key: str
   log_level: list(debug|info|warning|error|critical)
-environment:
+env:
   LOG_LEVEL: log_level
