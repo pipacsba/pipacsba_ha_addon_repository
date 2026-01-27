@@ -24,4 +24,4 @@ panel_title: timekpr-mngr
 #  5001/tcp: 5001
 schema:
   ssh_private_key: str
-  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  log_level: list(debug|info|warning|error|fatal)?
