@@ -43,6 +43,11 @@ git -C /app pull \
     || bashio::exit.nok \
         'Failed update application from github'
 
+# this should not be needed, but somehow it does
+pip install --no-cache-dir -r /app/requirements.txt \
+    || bashio::exit.nok \
+        'pip install failed'
+
 ## Run your program
 #exec /usr/bin/my_program
 #python /app/main2.py
