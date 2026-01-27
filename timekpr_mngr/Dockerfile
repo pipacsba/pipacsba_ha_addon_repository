@@ -25,7 +25,8 @@ RUN \
         tzdata \
         mailcap \
     \
-    && git clone \
+    #remove -b dev --single-branch when going back to main
+    && git clone -b dev --single-branch \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
     && git pull \
     \
