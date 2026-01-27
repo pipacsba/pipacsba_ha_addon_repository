@@ -44,7 +44,7 @@ git -C /app pull \
         'Failed update application from github'
 
 # this should not be needed, but somehow it does
-pip install --no-cache-dir -r /app/requirements.txt \
+pip install --no-cache-dir -r /app/requirements.txt -q \
     || bashio::exit.nok \
         'pip install failed'
 
