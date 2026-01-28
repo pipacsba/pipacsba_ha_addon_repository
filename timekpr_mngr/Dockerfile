@@ -26,7 +26,7 @@ RUN \
         mailcap \
     \
     #remove -b dev --single-branch when going back to main
-    && git clone -b dev --single-branch \
+    && git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
     && git pull \
     \
