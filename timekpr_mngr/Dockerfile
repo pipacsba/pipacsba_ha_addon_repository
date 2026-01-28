@@ -10,8 +10,6 @@ RUN \
 
 RUN rm -rf /app
 
-WORKDIR /app
-
 RUN \
     set -x \
     && apk add --no-cache \
@@ -23,12 +21,15 @@ RUN \
         python3 \
         py3-pip \
         tzdata \
-        mailcap \
-    \
+        mailcap 
+
+WORKDIR /app
+    
+RUN \
     #remove -b dev --single-branch when going back to main
-    && git clone \
+    git clone \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
-    && git pull \
+    && git -C /app pull \
     \
     && rm -f -r \
         /root/.cache \
