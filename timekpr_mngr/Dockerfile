@@ -1,4 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
+ARG TIMEKPR_MNGR_VERSION="1.0.0"
+
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
@@ -9,6 +11,7 @@ RUN \
     "https://github.com/home-assistant/tempio/releases/download/${TEMPIO_VERSION}/tempio_${BUILD_ARCH}"
 
 RUN rm -rf /app
+
 
 RUN \
     set -x \
@@ -27,7 +30,7 @@ WORKDIR /app
     
 RUN \
     #remove -b dev --single-branch when going back to main
-    git clone \
+    git clone --depth 1 --branch "${TIMEKPR_MNGR_VERSION}" \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
     && git -C /app pull \
     \
