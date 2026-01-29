@@ -27,10 +27,12 @@ RUN \
         mailcap 
 
 WORKDIR /app
+
+RUN echo ${TIMEKPR_MNGR_VERSION}
     
 RUN \
     #remove -b dev --single-branch when going back to main
-    git clone --depth 1 --branch "${TIMEKPR_MNGR_VERSION}" \
+    git clone --depth 1 --branch ${TIMEKPR_MNGR_VERSION} \
         https://github.com/pipacsba/timekpr-mngr.git /app/ \
     && git -C /app pull \
     \
