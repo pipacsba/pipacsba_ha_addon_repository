@@ -1,8 +1,8 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG TIMEKPR_MNGR_VERSION="1.0.0"
-
 ARG BUILD_FROM
 FROM $BUILD_FROM
+
+ARG TIMEKPR_MNGR_VERSION=1.0.0
 
 # Execute during the build of the image
 ARG TEMPIO_VERSION BUILD_ARCH
