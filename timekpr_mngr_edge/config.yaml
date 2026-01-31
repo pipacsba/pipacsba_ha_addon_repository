@@ -1,0 +1,39 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
+name: TimeKpr-Mngr
+version: "1.0.1"
+slug: timekpr_mngr
+description: Allows remote control of timekpr instances
+url: "https://github.com/pipacsba/pipacsba_ha_addon_repository/"
+timezone: true
+arch:
+  - aarch64
+  - amd64
+init: false
+memory: 512
+ingress: true
+ingress_port: 5002
+map:
+  - share:rw
+  - data:rw
+options:
+  ssh_private_key :
+  mqtt:
+  admin users:
+panel_icon: mdi:clock-in
+panel_title: timekpr-mngr
+#ports:
+#  22/tcp: null
+#  5001/tcp: 5001
+schema:
+  admin_users:
+    - username: str?
+  ssh_private_key: str?
+  mqtt: 
+    server: str?
+    port: port?
+    base_topic: str?
+#    key: str?
+#    cert: str?
+#    user: str?
+#    password: password?
+  log_level: list(debug|info|warning|error|fatal)?

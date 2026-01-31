@@ -1,0 +1,50 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Start the example service
+# s6-overlay docs: https://github.com/just-containers/s6-overlay
+# ==============================================================================
+
+# Add your code here
+
+# Sets up the users .ssh folder to be persistent
+if ! bashio::fs.directory_exists /data/ssh; then
+    mkdir -p /data/ssh \
+        || bashio::exit.nok 'Failed to create a persistent ssh folder'
+
+fi
+chmod 700 /data/ssh_keys \
+    || bashio::exit.nok \
+        'Failed setting permissions on persistent ssh folder'
+
+if bashio::config.has_value 'ssh_private_key'; then
+    bashio::log.info "store ssh_private_key"
+
+    rm -f /data/ssh_keys/timekpr_ui_key
+    while read -r line; do
+        echo "$line" >> /data/ssh_keys/timekpr_ui_key
+    done <<< "$(bashio::config 'ssh_private_key')"
+#   bashio::config 'ssh_private_key' > /data/ssh_keys/timekpr_ui_key
+
+
+    chmod 600 /data/ssh_keys/timekpr_ui_key
+fi
+
+if bashio::config.has_value 'log_level'; then
+    LOG_LEVEL="$(bashio::config 'log_level')"
+else
+    LOG_LEVEL="info"
+fi
+
+export LOG_LEVEL
+bashio::log.info "Using LOG_LEVEL=${LOG_LEVEL}"
+
+# Uncommented for released version
+git -C /app pull \
+    || bashio::exit.nok \
+        'Failed update application from github'
+pip install --no-cache-dir -r /app/requirements.txt -q \
+    || bashio::exit.nok \
+        'pip install failed'
+
+
+python /app/main.py
