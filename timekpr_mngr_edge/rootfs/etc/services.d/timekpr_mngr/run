@@ -7,8 +7,8 @@
 # Add your code here
 
 # Sets up the users .ssh folder to be persistent
-if ! bashio::fs.directory_exists /data/ssh; then
-    mkdir -p /data/ssh \
+if ! bashio::fs.directory_exists /data/ssh_keys; then
+    mkdir -p /data/ssh_keys \
         || bashio::exit.nok 'Failed to create a persistent ssh folder'
 
 fi
