@@ -18,9 +18,6 @@ RUN \
     && apk add --no-cache \
         git \
         libuv \
-        mosquitto-clients \
-        nano \
-        openssh-client \
         python3 \
         py3-pip \
         tzdata \
