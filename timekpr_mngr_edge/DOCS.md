@@ -1,5 +1,7 @@
 # Home Assistant Add-on: timekpr-nExT web UI addon
 
+# This is the EDGE (Unstable version), it may break / not start. Not recommended for normal users.
+
 ## How to use
 The goal is to control the timekpr-nExT instance from Home assistant via this addon.
 
