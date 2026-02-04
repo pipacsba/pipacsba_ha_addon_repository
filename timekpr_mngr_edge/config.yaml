@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: TimeKpr-Mngr_edge (unstable)
-version: "1.2.0"
+version: "1.2.2-edge"
 slug: timekpr_mngr_edge
 stage: experimental
 startup: application
