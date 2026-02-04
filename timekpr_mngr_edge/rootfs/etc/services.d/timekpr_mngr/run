@@ -39,7 +39,7 @@ export LOG_LEVEL
 bashio::log.info "Using LOG_LEVEL=${LOG_LEVEL}"
 
 # Uncommented for released version
-git config pull.ff only
+git -C /app config pull.ff only
 git -C /app pull \
     || bashio::exit.nok \
         'Failed update application from github'
