@@ -39,3 +39,5 @@ schema:
 #    user: str?
 #    password: password?
   log_level: list(debug|info|warning|error|fatal)?
+environment:
+  TIMEKPR_MNGR_CHANNEL: edge
