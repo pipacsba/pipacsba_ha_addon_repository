@@ -40,7 +40,7 @@ bashio::log.info "Using LOG_LEVEL=${LOG_LEVEL}"
 
 # Uncommented for released version
 #git -C /app config pull.rebase false
-git -C /app pull origin master --allow-unrelated-histories \
+git -C /app pull origin main --allow-unrelated-histories \
     || bashio::exit.nok \
         'Failed update application from github'
 pip install --no-cache-dir -r /app/requirements.txt -q \
