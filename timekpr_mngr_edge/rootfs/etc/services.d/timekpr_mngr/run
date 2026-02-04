@@ -39,7 +39,7 @@ export LOG_LEVEL
 bashio::log.info "Using LOG_LEVEL=${LOG_LEVEL}"
 
 # Uncommented for released version
-#git -C /app config pull.rebase false
+git -C /app config pull.rebase true
 git -C /app pull origin main --allow-unrelated-histories \
     || bashio::exit.nok \
         'Failed update application from github'
