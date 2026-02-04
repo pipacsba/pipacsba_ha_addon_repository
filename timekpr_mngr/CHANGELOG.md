@@ -1,5 +1,8 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+##1.2.1
+ - Fix UI timer
+
 ##1.2.0
  - Debug logging fine tuning, and heartbeat introduction to the background task, and show result on ui
 
