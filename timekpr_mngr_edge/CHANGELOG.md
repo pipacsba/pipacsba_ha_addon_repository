@@ -1,4 +1,5 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+This is EDGE = Unstable.
 
-Initial release
+Do not use, do not question.
