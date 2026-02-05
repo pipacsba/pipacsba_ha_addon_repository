@@ -1,5 +1,8 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.4.0
+  - Backup and restore
+
 ## 1.3.0
  - Fix ssh upload error, and add upload possibility to browse page for admin users
 
