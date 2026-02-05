@@ -1,11 +1,11 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
-name: TimeKpr-Mngr_edge (unstable)
-version: "1.2.2-edge_7"
-slug: timekpr_mngr_edge
-stage: experimental
+name: TimeKpr-Mngr
+version: "1.3.0-b1"
+slug: timekpr_mngr
+description: Allows remote control of timekpr instances
+stage: stable
 startup: application
-description: Allows remote control of timekpr instances (edge - unstable)
-url: "https://github.com/pipacsba/pipacsba_ha_addon_repository/"
+url: "https://github.com/pipacsba/pipacsba_ha_addon_repository/tree/main/timekpr_mngr"
 timezone: true
 arch:
   - aarch64
@@ -18,17 +18,15 @@ map:
   - share:rw
   - data:rw
 options:
-  ssh_private_key :
-  mqtt:
   admin users:
 panel_icon: mdi:clock-in
-panel_title: timekpr-mngr-edge
+panel_title: timekpr-mngr
 #ports:
 #  22/tcp: null
 #  5001/tcp: 5001
 schema:
   admin_users:
-    - username: str?
+    - username: str
   ssh_private_key: str?
   mqtt: 
     server: str?
@@ -39,5 +37,3 @@ schema:
 #    user: str?
 #    password: password?
   log_level: list(debug|info|warning|error|fatal)?
-environment:
-  TIMEKPR_MNGR_CHANNEL: edge
