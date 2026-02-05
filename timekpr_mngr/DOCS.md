@@ -2,22 +2,23 @@
 
 ## Configuration Options
 ### admin_users: 
-A list of usernames that are granted administrative privileges within the application. These users are identified by their username string.
+A list of usernames that are granted administrative privileges within the application. These users are identified by their username string. At least one user shall be defined.
 
 ### ssh_private_key: 
-A field intended to store or reference the private SSH key used for authenticating connections to the remote Timekpr servers. The application stores keys in the /data/ssh_keys directory to facilitate secure communication.
+(Optional) A field intended to store or reference the private SSH key used for authenticating connections to the remote Timekpr servers. The application stores keys in the /data/ssh_keys directory to facilitate secure communication. Files can be uploaded later during the server config.
 
 ### mqtt: 
-This section configures the connection to an MQTT broker for Home Assistant integration and status updates:
+(Optional) This section configures the connection to an MQTT broker for Home Assistant integration and status updates:
 
- -  #### server: 
-  The hostname or IP address of your MQTT broker.
+ -  #### server:
+
+&emsp; The hostname or IP address of your MQTT broker.
 
  -  #### port: 
-  The port number used by the MQTT broker (e.g., 1883).
+&emsp; The port number used by the MQTT broker (e.g., 1883).
 
  -  #### base_topic: 
-  The root MQTT topic prefix (e.g., timekpr) under which all messages, such as server status and user statistics, will be published.
+&emsp;The root MQTT topic prefix (e.g., timekpr) under which all messages, such as server status and user statistics, will be published.
 
 ### log_level: 
-Sets the verbosity of the application logs. Options include debug, info, warning, error, and fatal. This helps in troubleshooting by controlling how much detail is sent to the Home Assistant add-on logs.
+(Optional) Sets the verbosity of the application logs. Options include debug, info, warning, error, and fatal. This helps in troubleshooting by controlling how much detail is sent to the Home Assistant add-on logs.
