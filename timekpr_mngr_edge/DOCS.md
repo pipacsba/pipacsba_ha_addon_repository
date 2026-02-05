@@ -1,18 +1,26 @@
 # Home Assistant Add-on: timekpr-nExT web UI addon
 
-# This is the EDGE (Unstable version), it may break / not start. Not recommended for normal users.
+# This is the EDGE (Unstable version), it may break / not start. Not recommended to use.
 
-## How to use
-The goal is to control the timekpr-nExT instance from Home assistant via this addon.
+## Configuration Options
+### admin_users: 
+A list of usernames that are granted administrative privileges within the application. These users are identified by their username string.
 
-For setup options please visit https://github.com/adambie/timekpr-webui, and look for "3. Remote System Configuration"
+### ssh_private_key: 
+A field intended to store or reference the private SSH key used for authenticating connections to the remote Timekpr servers. The application stores keys in the /data/ssh_keys directory to facilitate secure communication.
 
-Additionally after the ssh key config I have deleted the user password ("sudo passwd -d `timekpr-remote`)
+### mqtt: 
+This section configures the connection to an MQTT broker for Home Assistant integration and status updates:
 
-From the config it only needs the private key to connect to the timekpr-nExT instance via ssh.
-Imprtant, the complete content of the private key file shall be added, including the BEGIN and END lines (maybe easier to do it in YAML mode):
+ -  #### server:
 
-ssh_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  base64encodedkeyhere
-  -----END OPENSSH PRIVATE KEY-----
+&emsp; The hostname or IP address of your MQTT broker.
+
+ -  #### port: 
+&emsp; The port number used by the MQTT broker (e.g., 1883).
+
+ -  #### base_topic: 
+&emsp;The root MQTT topic prefix (e.g., timekpr) under which all messages, such as server status and user statistics, will be published.
+
+### log_level: 
+Sets the verbosity of the application logs. Options include debug, info, warning, error, and fatal. This helps in troubleshooting by controlling how much detail is sent to the Home Assistant add-on logs.
