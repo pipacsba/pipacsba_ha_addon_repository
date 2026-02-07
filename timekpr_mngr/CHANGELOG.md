@@ -1,5 +1,8 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.4.1
+  - Stats board look and feel by
+
 ## 1.4.0
   - Backup and restore
 
