@@ -1,0 +1,27 @@
+name: Frigate Ingress Proxy
+slug: frigate_ingress_proxy
+description: "Ingress proxy to an external Frigate instance"
+version: "1.0.0"
+arch:
+  - amd64
+  - aarch64
+
+startup: services
+boot: auto
+init: false
+
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:cctv
+
+host_network: true
+
+options:
+  upstream_host: "192.168.1.50"
+  upstream_port: 5000
+  upstream_https: false
+
+schema:
+  upstream_host: str
+  upstream_port: int
+  upstream_https: bool
