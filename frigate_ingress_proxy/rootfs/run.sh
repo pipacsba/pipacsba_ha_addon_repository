@@ -19,4 +19,6 @@ envsubst '${UPSTREAM_SCHEME} ${UPSTREAM_HOST} ${UPSTREAM_PORT}' \
   < /etc/nginx/nginx.conf.template \
   > /etc/nginx/nginx.conf
 
+
+mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 exec nginx -g "daemon off;"
