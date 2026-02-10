@@ -32,7 +32,8 @@ http {
   }
 
   server {
-    listen %%NGINX_PORT%%;
+    listen 8099;
+
     proxy_read_timeout 3600s;
     proxy_send_timeout 3600s;
 
