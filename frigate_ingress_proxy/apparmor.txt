@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
+profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
   # Capabilities
