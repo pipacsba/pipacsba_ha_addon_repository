@@ -24,4 +24,11 @@ envsubst '${UPSTREAM_SCHEME} ${UPSTREAM_HOST} ${UPSTREAM_PORT}' \
 echo "[INFO] Generated nginx config:"
 cat /tmp/nginx.conf
 
-exec nginx -c /tmp/nginx.conf -g "daemon off;"
+# Create all needed temp directories in the writable /tmp partition
+mkdir -p /tmp/nginx/client_body \
+         /tmp/nginx/proxy \
+         /tmp/nginx/fastcgi \
+         /tmp/nginx/uwsgi \
+         /tmp/nginx/scgi
+
+nginx -c /tmp/nginx.conf
