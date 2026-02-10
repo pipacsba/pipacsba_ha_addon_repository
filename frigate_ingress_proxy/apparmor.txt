@@ -1,11 +1,11 @@
 #include <tunables/global>
 
-# Profile name MUST match the slug: frigate_ingress_proxy
+# Profile name MUST match your slug: frigate_ingress_proxy
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities for process management and Nginx
+  # Capabilities required for S6-Overlay v3 and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
@@ -14,12 +14,14 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   capability chown,
   capability fowner,
   capability kill,
+  capability sys_ptrace,
 
-  # Network access for the proxy
+  # Network access
   network inet stream,
   network inet6 stream,
+  network unix stream,
 
-  # S6-Overlay v3 core execution (Fixes the /etc/s6-overlay error)
+  # Core S6 and System binaries
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
@@ -29,19 +31,18 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /command/** rix,
   /etc/s6-overlay/** r,
 
-  # Allow execution of your startup script
-  /run.sh rix,
-
-  # Writable and executable locations for S6 runtime and Nginx
+  # Crucial for S6 v3 execution from /run
   /run/ r,
   /run/** rwkix,
-  
-  # Temporary and Configuration files
+
+  # Addon scripts and configuration
+  /run.sh rix,
+  /etc/nginx/** r,
   /tmp/ r,
   /tmp/** rwk,
-  /etc/nginx/** r,
-
-  # Nginx internal fallback paths (Fixes the Permission Denied on error.log)
+  /tmp/nginx.conf r,
+  
+  # Nginx internal paths (Fixes the Permission Denied on error.log)
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
   /var/log/nginx/ r,
@@ -52,12 +53,14 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /dev/stderr rw,
   /dev/tty rw,
   /dev/null rw,
+  /dev/random r,
+  /dev/urandom r,
 
-  # Bashio and Home Assistant infrastructure
+  # Bashio and Home Assistant internal access
   /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # Signals for process management
+  # Signals and process management
   signal (send, receive) peer=frigate_ingress_proxy,
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
