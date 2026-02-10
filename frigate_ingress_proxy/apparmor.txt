@@ -1,11 +1,11 @@
 #include <tunables/global>
 
-# Profile name must match the slug: frigate_ingress_proxy
+# Profile name MUST match the slug: frigate_ingress_proxy
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities required for S6-Overlay v3 and Nginx
+  # Capabilities for process management and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
@@ -15,11 +15,11 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   capability fowner,
   capability kill,
 
-  # Network access
+  # Network access for the proxy
   network inet stream,
   network inet6 stream,
 
-  # Core S6 and System binaries
+  # S6-Overlay v3 core execution (Fixes the /etc/s6-overlay error)
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
@@ -27,19 +27,25 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /usr/sbin/nginx rix,
   /package/** rix,
   /command/** rix,
+  /etc/s6-overlay/** r,
 
-  # Crucial for S6 v3 execution from /run (Fixes the Permission Denied on /run/s6/...)
+  # Allow execution of your startup script
+  /run.sh rix,
+
+  # Writable and executable locations for S6 runtime and Nginx
   /run/ r,
   /run/** rwkix,
-
-  # Addon specific scripts and config
-  /run.sh rix,
-  /etc/nginx/** r,
+  
+  # Temporary and Configuration files
   /tmp/ r,
   /tmp/** rwk,
-  /tmp/nginx.conf r,
+  /etc/nginx/** r,
+
+  # Nginx internal fallback paths (Fixes the Permission Denied on error.log)
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
+  /var/log/nginx/ r,
+  /var/log/nginx/** rwk,
 
   # Logging and System
   /dev/stdout rw,
@@ -47,7 +53,7 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /dev/tty rw,
   /dev/null rw,
 
-  # Bashio and Options
+  # Bashio and Home Assistant infrastructure
   /usr/lib/bashio/** r,
   /data/options.json r,
 
