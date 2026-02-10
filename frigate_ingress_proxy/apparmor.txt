@@ -1,11 +1,10 @@
 #include <tunables/global>
 
-# Profile name MUST match your slug: frigate_ingress_proxy
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities required for S6-Overlay v3 and Nginx
+  # Capabilities for S6-Overlay v3 and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
@@ -16,12 +15,12 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   capability kill,
   capability sys_ptrace,
 
-  # Network access
+  # Network
   network inet stream,
   network inet6 stream,
   network unix stream,
 
-  # Core S6 and System binaries
+  # Core Binaries
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
@@ -29,38 +28,36 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /usr/sbin/nginx rix,
   /package/** rix,
   /command/** rix,
+  
+  # S6-Overlay Config and Runtime (Crucial)
   /etc/s6-overlay/** r,
-
-  # Crucial for S6 v3 execution from /run
   /run/ r,
   /run/** rwkix,
 
-  # Addon scripts and configuration
+  # Bashio (This fixes the "unable to exec bashio" error)
+  /usr/lib/bashio/** rix,
+  /usr/bin/bashio rix,
+
+  # Addon specific
   /run.sh rix,
   /etc/nginx/** r,
   /tmp/ r,
-  /tmp/** rwk,
-  /tmp/nginx.conf r,
-  
-  # Nginx internal paths (Fixes the Permission Denied on error.log)
+  /tmp/** rwkix,
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
   /var/log/nginx/ r,
   /var/log/nginx/** rwk,
 
-  # Logging and System
+  # System access
   /dev/stdout rw,
   /dev/stderr rw,
   /dev/tty rw,
   /dev/null rw,
   /dev/random r,
   /dev/urandom r,
-
-  # Bashio and Home Assistant internal access
-  /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # Signals and process management
+  # Process management
   signal (send, receive) peer=frigate_ingress_proxy,
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
