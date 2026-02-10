@@ -4,6 +4,7 @@ set -e
 UPSTREAM_HOST="$(jq -r '.upstream_host' /data/options.json)"
 UPSTREAM_PORT="$(jq -r '.upstream_port' /data/options.json)"
 UPSTREAM_HTTPS="$(jq -r '.upstream_https' /data/options.json)"
+NGINX_PORT=8099
 
 if [ "$UPSTREAM_HTTPS" = "true" ]; then
   UPSTREAM_SCHEME="https"
