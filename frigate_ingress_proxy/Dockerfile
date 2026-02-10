@@ -2,8 +2,6 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-RUN rm -rf /app
-
 RUN apk add --no-cache nginx jq bash gettext
 
 COPY rootfs /
