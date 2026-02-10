@@ -1,21 +1,23 @@
 #include <tunables/global>
 
-# Profile name MUST match the add-on slug: frigate_ingress_proxy
+# Profile name MUST match the slug in config.yaml
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities required for process management and Nginx
+  # Capabilities required for S6-Overlay and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
   capability net_bind_service,
+  capability chown,
+  capability fowner,
 
-  # Network access for proxying
+  # Network access for the proxy
   network inet stream,
   network inet6 stream,
 
-  # S6-Overlay core execution (Fixes the /init and s6-overlay-suexec errors)
+  # S6-Overlay core execution (Fixes the /run/s6 and suexec errors)
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
@@ -24,39 +26,39 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /package/** rix,
   /command/** rix,
 
-  # Allow execution of the startup script
+  # Allow execution of your startup script
   /run.sh r,
 
-  # Runtime directories and process IDs
+  # Writable locations for S6 runtime and Nginx
+  /run/s6/ r,
   /run/s6/** rwk,
   /run/s6-rc*/** rwk,
+  /run/service/ r,
   /run/service/** rwk,
   /run/nginx.pid rwk,
-  /tmp/nginx.pid rwk,
-
-  # Nginx configuration and temporary file access
-  /etc/nginx/** r,
-  /tmp/nginx.conf r,
-  /tmp/nginx/ r,
-  /tmp/nginx/** rwk,
   
-  # Nginx system paths (Fixes the Permission Denied on error.log)
+  # Temporary and Config files
+  /tmp/ r,
+  /tmp/** rwk,
+  /etc/nginx/** r,
+
+  # Nginx internal fallback paths (Fixes the Permission Denied on error.log)
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
   /var/log/nginx/ r,
   /var/log/nginx/** rwk,
 
-  # System and logging access
+  # Logging and System
   /dev/stdout rw,
   /dev/stderr rw,
   /dev/tty rw,
   /dev/null rw,
 
-  # Bashio and Home Assistant options access
+  # Bashio and Options
   /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # Allow the container to manage its own signals and processes
+  # Process management signals
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
 }
