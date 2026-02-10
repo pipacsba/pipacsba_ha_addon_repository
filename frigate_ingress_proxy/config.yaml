@@ -1,7 +1,7 @@
 name: Frigate Ingress Proxy
 slug: frigate_ingress_proxy
 description: "Ingress proxy to an external Frigate instance"
-version: "0.0.21"
+version: "0.0.22"
 arch:
   - amd64
   - aarch64
@@ -15,6 +15,7 @@ apparmor: true
 
 ingress: true
 ingress_port: 8099
+ingress_entry: /logs
 panel_icon: mdi:cctv
 
 host_network: true
