@@ -1,11 +1,11 @@
 #include <tunables/global>
 
-# Profile name MUST match the slug in config.yaml
+# Profile name must match the slug: frigate_ingress_proxy
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities required for S6-Overlay and process management
+  # Capabilities required for S6-Overlay v3 and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
@@ -15,11 +15,11 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   capability fowner,
   capability kill,
 
-  # Network access for the proxy
+  # Network access
   network inet stream,
   network inet6 stream,
 
-  # S6-Overlay and System core execution
+  # Core S6 and System binaries
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
@@ -28,23 +28,18 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /package/** rix,
   /command/** rix,
 
-  # Allow execution of your startup script (CRITICAL: added rix)
-  /run.sh rix,
-
-  # Writable locations for S6 runtime and Nginx (CRITICAL: broadened /run)
+  # Crucial for S6 v3 execution from /run (Fixes the Permission Denied on /run/s6/...)
   /run/ r,
-  /run/** rwk,
-  
-  # Temporary and Config files
+  /run/** rwkix,
+
+  # Addon specific scripts and config
+  /run.sh rix,
+  /etc/nginx/** r,
   /tmp/ r,
   /tmp/** rwk,
-  /etc/nginx/** r,
-
-  # Nginx internal fallback paths (Fixes the Permission Denied on error.log)
+  /tmp/nginx.conf r,
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
-  /var/log/nginx/ r,
-  /var/log/nginx/** rwk,
 
   # Logging and System
   /dev/stdout rw,
@@ -52,11 +47,11 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   /dev/tty rw,
   /dev/null rw,
 
-  # Bashio and Home Assistant infrastructure
+  # Bashio and Options
   /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # Process management signals
+  # Signals for process management
   signal (send, receive) peer=frigate_ingress_proxy,
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
