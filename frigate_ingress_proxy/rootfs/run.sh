@@ -15,10 +15,13 @@ export UPSTREAM_HOST UPSTREAM_PORT UPSTREAM_SCHEME
 
 echo "[INFO] Frigate upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
 
+mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
+
 envsubst '${UPSTREAM_SCHEME} ${UPSTREAM_HOST} ${UPSTREAM_PORT}' \
   < /etc/nginx/nginx.conf.template \
-  > /etc/nginx/nginx.conf
+  > /tmp/nginx.conf
 
+echo "[INFO] Generated nginx config:"
+cat /tmp/nginx.conf
 
-mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
-exec nginx -c /etc/nginx/nginx.conf -g "daemon off;"
+exec nginx -c /tmp/nginx.conf -g "daemon off;"
