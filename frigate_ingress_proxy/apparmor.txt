@@ -1,59 +1,62 @@
 #include <tunables/global>
 
+# Profile name MUST match the add-on slug: frigate_ingress_proxy
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities for Nginx (required for initgroups and binding ports)
+  # Capabilities required for process management and Nginx
   capability setgid,
   capability setuid,
   capability dac_override,
   capability net_bind_service,
 
-  # Network access
+  # Network access for proxying
   network inet stream,
   network inet6 stream,
 
-  # Core S6-Overlay / Home Assistant requirements
+  # S6-Overlay core execution (Fixes the /init and s6-overlay-suexec errors)
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
   /sbin/nginx rix,
   /usr/sbin/nginx rix,
-  
-  # Allow execution of your startup script
+  /package/** rix,
+  /command/** rix,
+
+  # Allow execution of the startup script
   /run.sh r,
-  
-  # Configuration and Temp files
+
+  # Runtime directories and process IDs
+  /run/s6/** rwk,
+  /run/s6-rc*/** rwk,
+  /run/service/** rwk,
+  /run/nginx.pid rwk,
+  /tmp/nginx.pid rwk,
+
+  # Nginx configuration and temporary file access
   /etc/nginx/** r,
   /tmp/nginx.conf r,
   /tmp/nginx/ r,
   /tmp/nginx/** rwk,
-  /tmp/nginx.pid rwk,
-  /run/nginx.pid rwk,
   
-  # Nginx internal paths (fixes the Permission Denied on error.log)
+  # Nginx system paths (Fixes the Permission Denied on error.log)
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
   /var/log/nginx/ r,
   /var/log/nginx/** rwk,
-  
-  # Logging and System
+
+  # System and logging access
   /dev/stdout rw,
   /dev/stderr rw,
   /dev/tty rw,
   /dev/null rw,
 
-  # S6-Overlay runtime
-  /run/s6/** rwk,
-  /run/s6-rc*/** rwk,
-  /run/service/** rwk,
-  
-  # Bashio and Options
+  # Bashio and Home Assistant options access
   /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # Fix for signals and process management
+  # Allow the container to manage its own signals and processes
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
 }
