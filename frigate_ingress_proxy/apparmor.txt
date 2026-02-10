@@ -2,56 +2,50 @@
 
 profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
+  #include <abstractions/nameservice>
 
   # Capabilities
-  file,
-  signal (send) set=(kill,term,int,hup,cont),
+  capability setgid,
+  capability setuid,
+  capability dac_override,
 
-  # S6-Overlay
-  /init ix,
-  /bin/** ix,
-  /usr/bin/** ix,
-  /run/{s6,s6-rc*,service}/** ix,
-  /package/** ix,
-  /command/** ix,
-  /etc/services.d/** rwix,
-  /etc/cont-init.d/** rwix,
-  /etc/cont-finish.d/** rwix,
-  /run/{,**} rwk,
+  # Nginx specific permissions
+  network inet stream,
+  network inet6 stream,
+
+  # Filesystem access for S6 and scripts
+  /bin/** rix,
+  /usr/bin/** rix,
+  /sbin/nginx rix,
+  /usr/sbin/nginx rix,
+  
+  # Allow reading config files
+  /etc/nginx/** r,
+  /tmp/nginx.conf r,
+  
+  # Writable locations for PID and Temp files
+  /tmp/nginx/ r,
+  /tmp/nginx/** rwk,
+  /tmp/nginx.pid rwk,
+  /run/nginx.pid rwk,
+  /var/lib/nginx/ r,
+  /var/lib/nginx/** rwk,
+  
+  # Logging
+  /dev/stdout rw,
+  /dev/stderr rw,
   /dev/tty rw,
 
-  # Bashio
-  /usr/lib/bashio/** ix,
-  /tmp/** rwk,
+  # S6-Overlay and Bashio infrastructure
+  /init ix,
+  /run/s6/** rwk,
+  /run/s6-rc*/** rwk,
+  /run/service/** rwk,
+  /usr/lib/bashio/** r,
+  /data/options.json r,
 
-  # Access to options.json and other files within your addon
-  /data/** rw,
-
-  # Start new profile for service
-  /usr/bin/my_program cx -> my_program,
-
-  profile my_program flags=(attach_disconnected,mediate_deleted) {
-    #include <abstractions/base>
-
-    # Receive signals from S6-Overlay
-    signal (receive) peer=*_example,
-
-    # Access to options.json and other files within your addon
-    /data/** rw,
-
-    # Access to mapped volumes specified in config.json
-    /share/** rw,
-
-    # Access required for service functionality
-    # Note: List was built by doing the following:
-    # 1. Add what is obviously needed based on what is in the script
-    # 2. Add `complain` as a flag to this profile temporarily and run the addon
-    # 3. Review the audit log with `journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'` and add other access as needed
-    # Remember to remove the `complain` flag when you are done
-    /usr/bin/my_program r,
-    /bin/bash rix,
-    /bin/echo ix,
-    /etc/passwd r,
-    /dev/tty rw,
-  }
+  # This fixes the "initgroups" error
+  # It allows the process to manage its own system identity
+  signal (receive) peer=unconfined,
+  ptrace (trace) peer=unconfined,
 }
