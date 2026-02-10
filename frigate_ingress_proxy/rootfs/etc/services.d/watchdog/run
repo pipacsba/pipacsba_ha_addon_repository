@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bashio
+
+bashio::log.info "Watchdog service started"
+
+while true; do
+    sleep 30
+done
