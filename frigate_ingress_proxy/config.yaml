@@ -1,7 +1,7 @@
 name: Frigate Ingress Proxy
 slug: frigate_ingress_proxy
 description: "Ingress proxy to an external Frigate instance"
-version: "1.0.0"
+version: "0.0.1"
 arch:
   - amd64
   - aarch64
