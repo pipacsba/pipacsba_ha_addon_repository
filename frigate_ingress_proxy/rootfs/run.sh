@@ -31,4 +31,4 @@ mkdir -p /tmp/nginx/client_body \
          /tmp/nginx/uwsgi \
          /tmp/nginx/scgi
 
-nginx -c /tmp/nginx.conf
+nginx -c /tmp/nginx.conf -g "daemon off;"
