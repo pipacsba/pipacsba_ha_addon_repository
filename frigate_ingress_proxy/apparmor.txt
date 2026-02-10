@@ -4,48 +4,56 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities
+  # Capabilities for Nginx (required for initgroups and binding ports)
   capability setgid,
   capability setuid,
   capability dac_override,
+  capability net_bind_service,
 
-  # Nginx specific permissions
+  # Network access
   network inet stream,
   network inet6 stream,
 
-  # Filesystem access for S6 and scripts
+  # Core S6-Overlay / Home Assistant requirements
+  /init rix,
   /bin/** rix,
   /usr/bin/** rix,
   /sbin/nginx rix,
   /usr/sbin/nginx rix,
   
-  # Allow reading config files
+  # Allow execution of your startup script
+  /run.sh r,
+  
+  # Configuration and Temp files
   /etc/nginx/** r,
   /tmp/nginx.conf r,
-  
-  # Writable locations for PID and Temp files
   /tmp/nginx/ r,
   /tmp/nginx/** rwk,
   /tmp/nginx.pid rwk,
   /run/nginx.pid rwk,
+  
+  # Nginx internal paths (fixes the Permission Denied on error.log)
   /var/lib/nginx/ r,
   /var/lib/nginx/** rwk,
+  /var/log/nginx/ r,
+  /var/log/nginx/** rwk,
   
-  # Logging
+  # Logging and System
   /dev/stdout rw,
   /dev/stderr rw,
   /dev/tty rw,
+  /dev/null rw,
 
-  # S6-Overlay and Bashio infrastructure
-  /init ix,
+  # S6-Overlay runtime
   /run/s6/** rwk,
   /run/s6-rc*/** rwk,
   /run/service/** rwk,
+  
+  # Bashio and Options
   /usr/lib/bashio/** r,
   /data/options.json r,
 
-  # This fixes the "initgroups" error
-  # It allows the process to manage its own system identity
+  # Fix for signals and process management
   signal (receive) peer=unconfined,
   ptrace (trace) peer=unconfined,
 }
