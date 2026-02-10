@@ -9,6 +9,7 @@ COPY rootfs /
 RUN chmod +x /run.sh && \
     mkdir -p /run/nginx && \
     mkdir -p /var/lib/nginx/tmp && \
+    mkdir -p /var/lib/nginx/logs && \
     chown -R nginx:nginx /run/nginx /var/lib/nginx
 
 EXPOSE 8099
