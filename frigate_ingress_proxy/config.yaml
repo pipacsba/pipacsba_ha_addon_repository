@@ -6,9 +6,12 @@ arch:
   - amd64
   - aarch64
 
-startup: services
+stage: experimental
+startup: application
 boot: auto
 init: false
+
+apparmor: false
 
 ingress: true
 ingress_port: 8099
