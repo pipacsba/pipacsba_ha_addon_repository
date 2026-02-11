@@ -2,12 +2,20 @@
 
 profile timekpr_mngr flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/python>
+  #include <abstractions/openssl>
 
   # Capabilities
-  file,
+  capability signal,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # S6-Overlay
+  # Networking (Web server, SSH, and MQTT)
+  # Allows TCP connections for Ingress (port 5002), SSH, and MQTT
+  network inet stream,
+  network inet6 stream,
+
+  # S6-Overlay and Core System
   /init ix,
   /bin/** ix,
   /usr/bin/** ix,
@@ -20,38 +28,22 @@ profile timekpr_mngr flags=(attach_disconnected,mediate_deleted) {
   /run/{,**} rwk,
   /dev/tty rw,
 
-  # Bashio
+  # Bashio and Temporary Files
   /usr/lib/bashio/** ix,
   /tmp/** rwk,
 
-  # Access to options.json and other files within your addon
+  # Python Environment and Application Code
+  # Required to run 'python /app/main.py'
+  /usr/bin/python3* ix,
+  /app/** r,
+  /usr/lib/python3*/** r,
+  /usr/local/lib/python3*/** r,
+
+  # Data and Persistent Storage
+  # Required for the /app/instance symlink and SSH keys
   /data/** rw,
+  /share/** rw,
 
-  # Start new profile for service
-  /usr/bin/my_program cx -> my_program,
-
-  profile my_program flags=(attach_disconnected,mediate_deleted) {
-    #include <abstractions/base>
-
-    # Receive signals from S6-Overlay
-    signal (receive) peer=*_example,
-
-    # Access to options.json and other files within your addon
-    /data/** rw,
-
-    # Access to mapped volumes specified in config.json
-    /share/** rw,
-
-    # Access required for service functionality
-    # Note: List was built by doing the following:
-    # 1. Add what is obviously needed based on what is in the script
-    # 2. Add `complain` as a flag to this profile temporarily and run the addon
-    # 3. Review the audit log with `journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'` and add other access as needed
-    # Remember to remove the `complain` flag when you are done
-    /usr/bin/my_program r,
-    /bin/bash rix,
-    /bin/echo ix,
-    /etc/passwd r,
-    /dev/tty rw,
-  }
+  # Specific access for managed SSH keys
+  /data/ssh_keys/** rw,
 }
