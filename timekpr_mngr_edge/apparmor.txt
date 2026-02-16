@@ -1,17 +1,16 @@
 #include <tunables/global>
 
-# The name here MUST match the addon slug exactly
 profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <abstractions/python>
-  #include <abstractions/openssl>
 
   # Capabilities
   capability signal,
+  capability fowner,
+  capability chown,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Networking
+  # Networking (Web server, SSH, and MQTT)
   network inet stream,
   network inet6 stream,
 
@@ -32,11 +31,14 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   /usr/lib/bashio/** ix,
   /tmp/** rwk,
 
-  # Python Environment and Application Code
+  # Application Code and Runtime Updates
+  # Required for 'git pull' and 'pip install' in run.sh
   /usr/bin/python3* ix,
-  /app/** r,
-  /usr/lib/python3*/** r,
-  /usr/local/lib/python3*/** r,
+  /usr/bin/git* ix,
+  /usr/bin/ssh* ix,
+  /app/** rwix,
+  /usr/lib/python3*/** rw,
+  /usr/local/lib/python3*/** rw,
 
   # Data and Persistent Storage
   /data/** rw,
