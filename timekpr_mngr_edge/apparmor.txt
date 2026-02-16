@@ -9,13 +9,26 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   capability chown,
   capability dac_override,
   capability dac_read_search,
+  capability setuid,
+  capability setgid,
+  capability kill,
+  capability net_bind_service,
 
   # Signals
+  signal (receive) peer=unconfined,
+  signal (send,receive) peer=%%SLUG%%,
   signal (send) set=(kill,term,int,hup,cont),
+
+  # Unix Domain Sockets (Crucial for s6/Python/Logging communication)
+  unix (receive, send) type=stream,
+  unix (receive, send) type=dgram,
+  unix (receive, send) type=seqpacket,
 
   # Networking
   network inet stream,
+  network inet dgram,
   network inet6 stream,
+  network inet6 dgram,
 
   # Core System Paths
   /init rix,
@@ -24,20 +37,21 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   /lib/** rm,
   /usr/lib/** rm,
 
-  # s6-overlay v3 Requirements (The Fix)
-  # Allow reading the service definitions and the s6-overlay scripts
-  /etc/s6-overlay/** r,
+  # s6-overlay v3 Requirements
+  # Added 'ix' to s6-overlay scripts
+  /etc/s6-overlay/** rix,
   /usr/lib/s6/** rix,
   /bin/s6-* rix,
   /usr/bin/s6-* rix,
   
-  # Legacy/standard s6 paths
-  /run/{s6,s6-rc*,service}/** rix,
+  # Service management - Added 'w' and 'k' (locking)
+  /run/{s6,s6-rc*,service}/** rwixk,
   /package/** rix,
   /command/** rix,
-  /etc/services.d/** rix,
+  
+  # Allow s6 to manage its own control files in your service dirs
+  /etc/services.d/** rwixk,
   /etc/cont-init.d/** rix,
-  /etc/cont-finish.d/** rix,
 
   # Runtime and Temp
   /run/{,**} rwk,
@@ -45,13 +59,14 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   /dev/tty rw,
 
   # Bashio and Application Code
+  # Added 'm' (memory mapping) for Python imports and extensions
   /usr/lib/bashio/** rix,
-  /usr/bin/python3* rix,
+  /usr/bin/python3* rixm,
   /usr/bin/git* rix,
   /usr/bin/ssh* rix,
-  /app/** rwix,
-  /usr/lib/python3*/** rw,
-  /usr/local/lib/python3*/** rw,
+  /app/** rwixm,
+  /usr/lib/python3*/** rwm,
+  /usr/local/lib/python3*/** rwm,
 
   # Data and Persistent Storage
   /data/** rw,
