@@ -1,75 +1,53 @@
 #include <tunables/global>
 
+# Use %%SLUG%% so Home Assistant names the profile correctly
 profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
+
+  # Instead of the global "file," we grant access to the specific 
+  # system areas your Python app and s6-overlay need to "boot"
+  /bin/** rix,
+  /lib/** rmk,
+  /usr/lib/** rmk,
+  /usr/bin/** rix,
+  /usr/local/lib/python3*/** rmk,
+  /etc/** r,            # Needed to read service configs and resolve DNS
+  /init rix,            # The s6-overlay entrypoint
 
   # Capabilities
   capability fowner,
   capability chown,
   capability dac_override,
-  capability dac_read_search,
   capability setuid,
   capability setgid,
-  capability kill,
   capability net_bind_service,
 
   # Signals
   signal (receive) peer=unconfined,
-  signal (send,receive) peer=%%SLUG%%,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Unix Domain Sockets (Crucial for s6/Python/Logging communication)
-  unix (receive, send) type=stream,
-  unix (receive, send) type=dgram,
-  unix (receive, send) type=seqpacket,
+  # S6-Overlay & Runtime (Added 'w' and 'k' for locking)
+  /run/s6/** rwixk,
+  /run/s6-rc*/** rwixk,
+  /run/service/** rwixk,
+  /run/{,**} rwk,
+  /package/** rix,
+  /command/** rix,
+  /etc/services.d/** rwixk,
+  /etc/cont-init.d/** rix,
+  /dev/tty rw,
+  /tmp/** rwk,
+
+  # Your Application Specific Paths
+  /app/** rwix,
+  /data/** rw,
+  /share/** rw,
+  /config/** rw,
 
   # Networking
   network inet stream,
   network inet dgram,
   network inet6 stream,
   network inet6 dgram,
-
-  # Core System Paths
-  /init rix,
-  /bin/** rix,
-  /usr/bin/** rix,
-  /lib/** rm,
-  /usr/lib/** rm,
-
-  # s6-overlay v3 Requirements
-  # Added 'ix' to s6-overlay scripts
-  /etc/s6-overlay/** rix,
-  /usr/lib/s6/** rix,
-  /bin/s6-* rix,
-  /usr/bin/s6-* rix,
-  
-  # Service management - Added 'w' and 'k' (locking)
-  /run/{s6,s6-rc*,service}/** rwixk,
-  /package/** rix,
-  /command/** rix,
-  
-  # Allow s6 to manage its own control files in your service dirs
-  /etc/services.d/** rwixk,
-  /etc/cont-init.d/** rix,
-
-  # Runtime and Temp
-  /run/{,**} rwk,
-  /tmp/** rwk,
-  /dev/tty rw,
-
-  # Bashio and Application Code
-  # Added 'm' (memory mapping) for Python imports and extensions
-  /usr/lib/bashio/** rix,
-  /usr/bin/python3* rixm,
-  /usr/bin/git* rix,
-  /usr/bin/ssh* rix,
-  /app/** rwixm,
-  /usr/lib/python3*/** rwm,
-  /usr/local/lib/python3*/** rwm,
-
-  # Data and Persistent Storage
-  /data/** rw,
-  /share/** rw,
-  /config/** rw,
 }
