@@ -5,12 +5,14 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/nameservice>
 
   # Capabilities
+  # Required for 'chmod 700 /data/ssh_keys' in run.sh
   capability signal,
   capability fowner,
   capability chown,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Networking (Web server, SSH, and MQTT)
+  # Networking
+  # Required for Ingress (5002), SSH, and MQTT
   network inet stream,
   network inet6 stream,
 
@@ -32,7 +34,7 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   /tmp/** rwk,
 
   # Application Code and Runtime Updates
-  # Required for 'git pull' and 'pip install' in run.sh
+  # Allows 'git pull' and 'pip install' to update the code
   /usr/bin/python3* ix,
   /usr/bin/git* ix,
   /usr/bin/ssh* ix,
@@ -41,6 +43,7 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   /usr/local/lib/python3*/** rw,
 
   # Data and Persistent Storage
+  # Required for SSH keys and the /app/instance symlink
   /data/** rw,
   /share/** rw,
 }
