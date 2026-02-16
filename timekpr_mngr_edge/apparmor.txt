@@ -4,7 +4,7 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Capabilities - bashio and s6 need these to manage the container
+  # Capabilities - Needed for s6-overlay and bashio to manage the addon
   capability fowner,
   capability chown,
   capability dac_override,
@@ -19,7 +19,7 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   signal (send,receive) peer=%%SLUG%%,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Core System Paths (Added sbin, local/bin, and mmap support)
+  # Core System Paths - Added 'm' and 'k' for Python/Busybox stability
   /init rixmk,
   /bin/** rixmk,
   /sbin/** rixmk,
@@ -30,38 +30,42 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   /usr/lib/** rmixk,
   /usr/local/lib/** rmixk,
 
-  # s6-overlay v3 Specifics
+  # Bashio (The library scripts)
+  # Needs 'r' to be read by bash and 'ix' to be executed
+  /usr/lib/bashio/** rix,
+
+  # s6-overlay v3 Requirements
   /command/** rixmk,
   /package/** rixmk,
   /etc/s6-overlay/** rix,
   /run/s6/** rwixk,
   /run/s6-rc*/** rwixk,
   /run/service/** rwixk,
-
-  # Service Directories - Needed for s6 to launch your scripts
+  
+  # Service management
   /etc/services.d/** rwixk,
   /etc/cont-init.d/** rix,
   /etc/cont-finish.d/** rix,
 
-  # Bashio Library (The scripts bashio actually runs)
-  /usr/lib/bashio/** rix,
+  # System Configs (Needed for DNS and Shell environment)
+  /etc/** r,
 
-  # Runtime, Temp, and Networking
+  # Runtime and Temp
   /run/{,**} rwk,
   /tmp/** rwk,
   /dev/tty rw,
-  /etc/terminfo/** r,
-  /etc/inputrc r,
+
+  # Application Paths
+  /app/** rwixm,
+  /data/** rw,
+  /share/** rw,
+  /config/** rw,
+
+  # Networking (Crucial for DNS and Ingress)
   network inet stream,
   network inet dgram,
   network inet6 stream,
   network inet6 dgram,
   unix (receive, send) type=stream,
   unix (receive, send) type=dgram,
-
-  # Application and Data
-  /app/** rwixm,
-  /data/** rw,
-  /share/** rw,
-  /config/** rw,
 }
