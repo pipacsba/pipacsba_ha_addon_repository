@@ -1,0 +1,31 @@
+name: Proxmox Ingress Proxy
+slug: proxmox_ingress_proxy
+description: "Ingress proxy to an external proxmox instance"
+version: "0.0.1"
+arch:
+  - amd64
+  - aarch64
+
+stage: experimental
+startup: application
+boot: auto
+init: false
+
+apparmor: true
+
+ingress: true
+ingress_port: 8098
+ingress_entry: logs
+panel_icon: mdi:train-car-container
+
+host_network: true
+
+options:
+  upstream_host: "192.168.1.50"
+  upstream_port: 5000
+  upstream_https: false
+
+schema:
+  upstream_host: str
+  upstream_port: int
+  upstream_https: bool
