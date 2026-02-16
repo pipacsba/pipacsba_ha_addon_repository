@@ -1,53 +1,67 @@
 #include <tunables/global>
 
-# Use %%SLUG%% so Home Assistant names the profile correctly
 profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  # Instead of the global "file," we grant access to the specific 
-  # system areas your Python app and s6-overlay need to "boot"
-  /bin/** rix,
-  /lib/** rmk,
-  /usr/lib/** rmk,
-  /usr/bin/** rix,
-  /usr/local/lib/python3*/** rmk,
-  /etc/** r,            # Needed to read service configs and resolve DNS
-  /init rix,            # The s6-overlay entrypoint
-
-  # Capabilities
+  # Capabilities - bashio and s6 need these to manage the container
   capability fowner,
   capability chown,
   capability dac_override,
+  capability dac_read_search,
   capability setuid,
   capability setgid,
   capability net_bind_service,
+  capability kill,
 
   # Signals
   signal (receive) peer=unconfined,
+  signal (send,receive) peer=%%SLUG%%,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # S6-Overlay & Runtime (Added 'w' and 'k' for locking)
+  # Core System Paths (Added sbin, local/bin, and mmap support)
+  /init rixmk,
+  /bin/** rixmk,
+  /sbin/** rixmk,
+  /usr/bin/** rixmk,
+  /usr/sbin/** rixmk,
+  /usr/local/bin/** rixmk,
+  /lib/** rmixk,
+  /usr/lib/** rmixk,
+  /usr/local/lib/** rmixk,
+
+  # s6-overlay v3 Specifics
+  /command/** rixmk,
+  /package/** rixmk,
+  /etc/s6-overlay/** rix,
   /run/s6/** rwixk,
   /run/s6-rc*/** rwixk,
   /run/service/** rwixk,
-  /run/{,**} rwk,
-  /package/** rix,
-  /command/** rix,
+
+  # Service Directories - Needed for s6 to launch your scripts
   /etc/services.d/** rwixk,
   /etc/cont-init.d/** rix,
-  /dev/tty rw,
+  /etc/cont-finish.d/** rix,
+
+  # Bashio Library (The scripts bashio actually runs)
+  /usr/lib/bashio/** rix,
+
+  # Runtime, Temp, and Networking
+  /run/{,**} rwk,
   /tmp/** rwk,
-
-  # Your Application Specific Paths
-  /app/** rwix,
-  /data/** rw,
-  /share/** rw,
-  /config/** rw,
-
-  # Networking
+  /dev/tty rw,
+  /etc/terminfo/** r,
+  /etc/inputrc r,
   network inet stream,
   network inet dgram,
   network inet6 stream,
   network inet6 dgram,
+  unix (receive, send) type=stream,
+  unix (receive, send) type=dgram,
+
+  # Application and Data
+  /app/** rwixm,
+  /data/** rw,
+  /share/** rw,
+  /config/** rw,
 }
