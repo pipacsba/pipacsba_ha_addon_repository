@@ -1,5 +1,6 @@
 #include <tunables/global>
 
+# The name here MUST match the addon slug exactly
 profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
@@ -10,8 +11,7 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   capability signal,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Networking (Web server, SSH, and MQTT)
-  # Allows TCP connections for Ingress (port 5002), SSH, and MQTT
+  # Networking
   network inet stream,
   network inet6 stream,
 
@@ -33,17 +33,12 @@ profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
   /tmp/** rwk,
 
   # Python Environment and Application Code
-  # Required to run 'python /app/main.py'
   /usr/bin/python3* ix,
   /app/** r,
   /usr/lib/python3*/** r,
   /usr/local/lib/python3*/** r,
 
   # Data and Persistent Storage
-  # Required for the /app/instance symlink and SSH keys
   /data/** rw,
   /share/** rw,
-
-  # Specific access for managed SSH keys
-  /data/ssh_keys/** rw,
 }
