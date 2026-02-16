@@ -1,25 +1,25 @@
 #include <tunables/global>
 
-profile timekpr_mngr_edge flags=(attach_disconnected,mediate_deleted) {
+profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
   # Capabilities
-  # Required for 'chmod 700 /data/ssh_keys' in run.sh
-  capability signal,
   capability fowner,
   capability chown,
+
+  # Signals (Corrected)
   signal (send) set=(kill,term,int,hup,cont),
 
   # Networking
-  # Required for Ingress (5002), SSH, and MQTT
   network inet stream,
   network inet6 stream,
 
-  # S6-Overlay and Core System
+  # Files (Broad access for testing, refine later)
   /init ix,
   /bin/** ix,
   /usr/bin/** ix,
+  /data/** rw,
   /run/{s6,s6-rc*,service}/** ix,
   /package/** ix,
   /command/** ix,
