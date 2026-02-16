@@ -1,4 +1,6 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+## 1.4.2
+   - MQTT publish of user usage in every cycle
 
 ## 1.4.1
   - Stats board look and feel by
