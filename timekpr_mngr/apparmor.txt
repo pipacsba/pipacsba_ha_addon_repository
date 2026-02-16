@@ -1,13 +1,16 @@
 #include <tunables/global>
 
-profile timekpr_mngr flags=(attach_disconnected,mediate_deleted) {
+profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/python>
   #include <abstractions/openssl>
 
-  # Capabilities
-  capability signal,
+# Capabilities
+  capability fowner,
+  capability chown,
+
+# Signals (Corrected)
   signal (send) set=(kill,term,int,hup,cont),
 
   # Networking (Web server, SSH, and MQTT)
@@ -19,6 +22,7 @@ profile timekpr_mngr flags=(attach_disconnected,mediate_deleted) {
   /init ix,
   /bin/** ix,
   /usr/bin/** ix,
+  /data/** rw,
   /run/{s6,s6-rc*,service}/** ix,
   /package/** ix,
   /command/** ix,
