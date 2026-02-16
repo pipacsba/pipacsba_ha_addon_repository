@@ -7,43 +7,47 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   # Capabilities
   capability fowner,
   capability chown,
+  capability dac_override,
 
-  # Signals (Corrected)
+  # Signals
   signal (send) set=(kill,term,int,hup,cont),
 
   # Networking
   network inet stream,
   network inet6 stream,
 
-  # Files (Broad access for testing, refine later)
-  /init ix,
-  /bin/** ix,
-  /usr/bin/** ix,
-  /data/** rw,
-  /run/{s6,s6-rc*,service}/** ix,
-  /package/** ix,
-  /command/** ix,
-  /etc/services.d/** rwix,
-  /etc/cont-init.d/** rwix,
-  /etc/cont-finish.d/** rwix,
+  # Core System Paths
+  # Added 'r' to /init to allow sh to read the entrypoint script
+  /init rix,
+  /bin/** rix,
+  /usr/bin/** rix,
+  /lib/** rm,
+  /usr/lib/** rm,
+
+  # s6-overlay v3 Requirements
+  /run/{s6,s6-rc*,service}/** rix,
+  /package/** rix,
+  /command/** rix,
+  /etc/services.d/** rix,
+  /etc/cont-init.d/** rix,
+  /etc/cont-finish.d/** rix,
   /run/{,**} rwk,
   /dev/tty rw,
 
   # Bashio and Temporary Files
-  /usr/lib/bashio/** ix,
+  /usr/lib/bashio/** rix,
   /tmp/** rwk,
 
   # Application Code and Runtime Updates
-  # Allows 'git pull' and 'pip install' to update the code
-  /usr/bin/python3* ix,
-  /usr/bin/git* ix,
-  /usr/bin/ssh* ix,
+  /usr/bin/python3* rix,
+  /usr/bin/git* rix,
+  /usr/bin/ssh* rix,
   /app/** rwix,
   /usr/lib/python3*/** rw,
   /usr/local/lib/python3*/** rw,
 
   # Data and Persistent Storage
-  # Required for SSH keys and the /app/instance symlink
   /data/** rw,
   /share/** rw,
+  /config/** rw,
 }
