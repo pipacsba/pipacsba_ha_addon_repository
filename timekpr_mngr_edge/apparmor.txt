@@ -8,6 +8,7 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   capability fowner,
   capability chown,
   capability dac_override,
+  capability dac_read_search,
 
   # Signals
   signal (send) set=(kill,term,int,hup,cont),
@@ -17,28 +18,34 @@ profile %%SLUG%% flags=(attach_disconnected,mediate_deleted) {
   network inet6 stream,
 
   # Core System Paths
-  # Added 'r' to /init to allow sh to read the entrypoint script
   /init rix,
   /bin/** rix,
   /usr/bin/** rix,
   /lib/** rm,
   /usr/lib/** rm,
 
-  # s6-overlay v3 Requirements
+  # s6-overlay v3 Requirements (The Fix)
+  # Allow reading the service definitions and the s6-overlay scripts
+  /etc/s6-overlay/** r,
+  /usr/lib/s6/** rix,
+  /bin/s6-* rix,
+  /usr/bin/s6-* rix,
+  
+  # Legacy/standard s6 paths
   /run/{s6,s6-rc*,service}/** rix,
   /package/** rix,
   /command/** rix,
   /etc/services.d/** rix,
   /etc/cont-init.d/** rix,
   /etc/cont-finish.d/** rix,
+
+  # Runtime and Temp
   /run/{,**} rwk,
+  /tmp/** rwk,
   /dev/tty rw,
 
-  # Bashio and Temporary Files
+  # Bashio and Application Code
   /usr/lib/bashio/** rix,
-  /tmp/** rwk,
-
-  # Application Code and Runtime Updates
   /usr/bin/python3* rix,
   /usr/bin/git* rix,
   /usr/bin/ssh* rix,
