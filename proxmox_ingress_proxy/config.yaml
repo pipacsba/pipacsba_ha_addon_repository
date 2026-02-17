@@ -1,7 +1,7 @@
 name: Proxmox Ingress Proxy
 slug: proxmox_ingress_proxy
 description: "Ingress proxy to an external proxmox instance"
-version: "0.0.2"
+version: "0.0.3"
 arch:
   - amd64
   - aarch64
@@ -22,8 +22,8 @@ host_network: true
 
 options:
   upstream_host: "192.168.1.50"
-  upstream_port: 5000
-  upstream_https: false
+  upstream_port: 8006
+  upstream_https: true
 
 schema:
   upstream_host: str
