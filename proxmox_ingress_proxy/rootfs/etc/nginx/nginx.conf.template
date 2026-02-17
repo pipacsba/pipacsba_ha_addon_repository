@@ -31,38 +31,47 @@ http {
     ''      close;
   }
 
-  server {
-    listen 8098;
+http {
+  # ... (keep existing http block settings) ...
 
-    proxy_read_timeout 3600s;
-    proxy_send_timeout 3600s;
-
-    location / {
-      proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
-
-      # --- REQUIRED FOR SUB_FILTER TO WORK ---
-      # Disable compression so Nginx can modify the text content
-      proxy_set_header Accept-Encoding ""; 
+    server {
+      listen ${INGRESS_PORT};
       
-      sub_filter_once off;
-      # Apply to HTML, CSS, and Javascript
-      sub_filter_types text/html text/javascript application/javascript text/css;
-      
-      # Rewrite absolute paths to relative paths
-      sub_filter 'href="/' 'href="./';
-      sub_filter 'src="/' 'src="./';
-      sub_filter '"/pve2/' '"./pve2/';
-      sub_filter '"/api2/' '"./api2/';
-      sub_filter '"/pwt/' '"./pwt/';
-      sub_filter '"/proxmoxlib.js' '"./proxmoxlib.js';
-      # ---------------------------------------
+      location / {
+        # Capture the Ingress path prefix (e.g., /api/hassio_ingress/TOKEN)
+        set $ingress_path $http_x_ingress_path;
+  
+        proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+  
+        # 1. Disable compression so Nginx can filter the content
+        proxy_set_header Accept-Encoding ""; 
+  
+        # 2. Rewrite Cookie paths so the browser sends them back to the Ingress URL
+        proxy_cookie_path / "$ingress_path/";
+  
+        # 3. Apply filters to HTML, CSS, and Javascript
+        sub_filter_once off;
+        sub_filter_types text/html text/javascript application/javascript text/css;
+        
+        # Rewrite absolute paths to the correct Ingress prefix
+        # We handle both double and single quotes used in JS/HTML
+        sub_filter 'href="/' 'href="$ingress_path/';
+        sub_filter 'src="/' 'src="$ingress_path/';
+        sub_filter '"/pve2/' '"$ingress_path/pve2/';
+        sub_filter '"/api2/' '"$ingress_path/api2/';
+        sub_filter '"/pwt/' '"$ingress_path/pwt/';
+        sub_filter '"/proxmoxlib.js' '"$ingress_path/proxmoxlib.js';
+        
+        sub_filter "'/pve2/" "'$ingress_path/pve2/";
+        sub_filter "'/api2/" "'$ingress_path/api2/";
+      }
     }
   }
 }
