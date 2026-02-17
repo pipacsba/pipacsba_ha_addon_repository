@@ -1,28 +1,22 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bashio
 set -e
 
-UPSTREAM_HOST="$(jq -r '.upstream_host' /data/options.json)"
-UPSTREAM_PORT="$(jq -r '.upstream_port' /data/options.json)"
-UPSTREAM_HTTPS="$(jq -r '.upstream_https' /data/options.json)"
+# Pull upstream values from config
+export UPSTREAM_HOST=$(bashio::config 'upstream_host')
+export UPSTREAM_PORT=$(bashio::config 'upstream_port')
+export UPSTREAM_SCHEME=$(bashio::config 'upstream_https' 'false' && echo "https" || echo "http")
 
-if [ "$UPSTREAM_HTTPS" = "true" ]; then
-  UPSTREAM_SCHEME="https"
-else
-  UPSTREAM_SCHEME="http"
-fi
+# Correct way to get the ingress port dynamically from the Supervisor
+export INGRESS_PORT=$(bashio::api.supervisor GET /addons/self/info | bashio::jq ".ingress_port")
 
-export UPSTREAM_HOST UPSTREAM_PORT UPSTREAM_SCHEME
-
-export INGRESS_PORT=$(bashio::addon.ingress_port)
-
-echo "[INFO] Proxmox upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
-echo "[INFO] Ingress listening on: ${INGRESS_PORT}"
+bashio::log.info "Proxmox upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
+bashio::log.info "Ingress listening on port: ${INGRESS_PORT}"
 
 mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 
-envsubst '${UPSTREAM_SCHEME} ${UPSTREAM_HOST} ${UPSTREAM_PORT}' \
-  < /etc/nginx/nginx.conf.template \
-  > /tmp/nginx.conf
+# Template the nginx config
+envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${UPSTREAM_SCHEME} ${INGRESS_PORT}' \
+    < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 echo "[INFO] Generated nginx config:"
 cat /tmp/nginx.conf
