@@ -4,10 +4,16 @@ set -e
 # Pull upstream values from config
 export UPSTREAM_HOST=$(bashio::config 'upstream_host')
 export UPSTREAM_PORT=$(bashio::config 'upstream_port')
-export UPSTREAM_SCHEME=$(bashio::config 'upstream_https' 'false' && echo "https" || echo "http")
 
-# Correct way to get the ingress port dynamically from the Supervisor
-export INGRESS_PORT=$(bashio::api.supervisor GET /addons/self/info | bashio::jq ".ingress_port")
+# Correct logic for HTTPS scheme
+if bashio::config.true 'upstream_https'; then
+    export UPSTREAM_SCHEME="https"
+else
+    export UPSTREAM_SCHEME="http"
+fi
+
+# Fixed: Use Supervisor API to get the port and parse with standard jq
+export INGRESS_PORT=$(bashio::api.supervisor GET /addons/self/info | jq -r '.data.ingress_port')
 
 bashio::log.info "Proxmox upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
 bashio::log.info "Ingress listening on port: ${INGRESS_PORT}"
