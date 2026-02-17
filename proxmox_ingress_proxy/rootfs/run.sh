@@ -13,7 +13,7 @@ fi
 
 export UPSTREAM_HOST UPSTREAM_PORT UPSTREAM_SCHEME
 
-echo "[INFO] Frigate upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
+echo "[INFO] app upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
 
 mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 
