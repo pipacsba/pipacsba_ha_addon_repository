@@ -40,7 +40,7 @@ profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
 
   # Addon specific
   /run.sh rix,
-  /etc/nginx/** r,
+  /etc/nginx/** rwk,
   /tmp/ r,
   /tmp/** rwkix,
   /var/lib/nginx/ r,
