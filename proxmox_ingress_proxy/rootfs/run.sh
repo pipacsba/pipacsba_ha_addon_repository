@@ -13,7 +13,10 @@ fi
 
 export UPSTREAM_HOST UPSTREAM_PORT UPSTREAM_SCHEME
 
-echo "[INFO] app upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
+export INGRESS_PORT=$(bashio::addon.ingress_port)
+
+echo "[INFO] Proxmox upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
+echo "[INFO] Ingress listening on: ${INGRESS_PORT}"
 
 mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 
