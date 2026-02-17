@@ -42,16 +42,13 @@ http {
     }
 
     #
-    # CRITICAL FIX:
-    # ExtJS sometimes tries to load class modules from /PVE/... directly.
-    # Those are actually under /pve2/js/PVE/...
+    # Fix broken ExtJS class loader paths:
+    # /PVE/... -> /pve2/js/PVE/...
     #
     location ^~ /PVE/ {
       set $ingress_path $http_x_ingress_path;
 
-      rewrite ^/PVE/(.*)$ /pve2/js/PVE/$1 break;
-
-      proxy_pass https://192.168.17.13:8006;
+      proxy_pass https://192.168.17.13:8006/pve2/js/PVE/;
       proxy_http_version 1.1;
 
       proxy_set_header Host 192.168.17.13;
@@ -148,7 +145,6 @@ http {
       sub_filter_once off;
       sub_filter_types text/html;
 
-      # Fix root assets in HTML (qrcode.min.js etc.)
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
 
