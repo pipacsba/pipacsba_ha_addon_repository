@@ -84,10 +84,6 @@ http {
             application/javascript
             text/css;
 
-          # Rewrite common asset paths
-          sub_filter 'href="/' 'href="$ingress_path/';
-          sub_filter 'src="/'  'src="$ingress_path/';
-
           # Rewrite Proxmox internal paths (double quotes)
           sub_filter '"/pve2/' '"$ingress_path/pve2/';
           sub_filter '"/pwt/'  '"$ingress_path/pwt/';
