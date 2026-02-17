@@ -22,7 +22,7 @@ mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 
 # Template the nginx config
 envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${UPSTREAM_SCHEME} ${INGRESS_PORT}' \
-    < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+    < /etc/nginx/nginx.conf.template > /tmp/nginx.conf
 
 echo "[INFO] Generated nginx config:"
 cat /tmp/nginx.conf
