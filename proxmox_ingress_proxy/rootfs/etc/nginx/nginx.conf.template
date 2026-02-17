@@ -31,10 +31,7 @@ http {
     ''      close;
   }
 
-http {
-  # ... (keep existing http block settings) ...
-
-    server {
+  server {
       listen ${INGRESS_PORT};
       
       location / {
@@ -72,6 +69,5 @@ http {
         sub_filter "'/pve2/" "'$ingress_path/pve2/";
         sub_filter "'/api2/" "'$ingress_path/api2/";
       }
-    }
   }
 }
