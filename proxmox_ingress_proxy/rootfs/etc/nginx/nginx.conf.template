@@ -66,3 +66,44 @@ http {
 
           # Fix redirects from upstream (Location: /pve2/ , /api2/ , / )
           proxy_redirect /pve2/ $ingress_path/pve2/;
+          proxy_redirect /api2/ $ingress_path/api2/;
+          proxy_redirect / $ingress_path/;
+
+          # Make sure rewritten assets don't get stuck in cache while testing
+          add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+          add_header Pragma "no-cache" always;
+          expires -1;
+
+          # Rewrite content
+          sub_filter_once off;
+
+          # Must include application/javascript for ext-all.js
+          sub_filter_types
+            text/html
+            text/javascript
+            application/javascript
+            text/css;
+
+          # Rewrite common asset paths
+          sub_filter 'href="/' 'href="$ingress_path/';
+          sub_filter 'src="/'  'src="$ingress_path/';
+
+          # Rewrite Proxmox internal paths (double quotes)
+          sub_filter '"/pve2/' '"$ingress_path/pve2/';
+          sub_filter '"/pwt/'  '"$ingress_path/pwt/';
+          sub_filter '"/api2/' '"$ingress_path/api2/';
+
+          # Rewrite Proxmox internal paths (single quotes)
+          sub_filter "'/pve2/" "'$ingress_path/pve2/";
+          sub_filter "'/pwt/"  "'$ingress_path/pwt/";
+          sub_filter "'/api2/" "'$ingress_path/api2/";
+
+          # CRITICAL:
+          # Catch unquoted /api2/ (ExtJS sometimes emits this form)
+          sub_filter '/api2/' '$ingress_path/api2/';
+
+          # Optional: if proxmoxlib.js exists as a root file in some versions
+          sub_filter '"/proxmoxlib.js' '"$ingress_path/proxmoxlib.js';
+      }
+  }
+}
