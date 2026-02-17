@@ -36,8 +36,8 @@ http {
 
       # --- NEW: Block Proxmox Service Worker ---
       # This prevents the browser from registering the "hijacker"
-      location ~* proxmox-service-worker.js {
-        return 404;
+      location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
+          return 404;
       }
 
 
