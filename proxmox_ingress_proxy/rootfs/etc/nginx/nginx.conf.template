@@ -2,7 +2,7 @@ user root;
 worker_processes  1;
 pid /tmp/nginx.pid;
 
-# Move error_log to the top level to override the default path
+# Log to HA addon logs
 error_log /dev/stderr warn;
 
 events {
@@ -12,9 +12,11 @@ events {
 http {
   include       /etc/nginx/mime.types;
   default_type  application/octet-stream;
+
   sendfile on;
   tcp_nopush on;
   tcp_nodelay on;
+
   client_max_body_size 100m;
 
   # Redirect ALL temporary paths to a writable location (/tmp)
@@ -35,17 +37,15 @@ http {
     listen 8098;
 
     #
-    # 1) Block Proxmox Service Worker(s)
-    #    (prevents the browser from registering the hijacker)
+    # Block Proxmox Service Worker(s)
     #
     location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
       return 404;
     }
 
     #
-    # 2) JS + CSS
-    #    - NO generic src="/ or href="/ rewrites here
-    #    - Only targeted rewrites
+    # JS + CSS
+    # (NO generic src="/ or href="/ rewrites here)
     #
     location ~* \.(js|css)$ {
       set $ingress_path $http_x_ingress_path;
@@ -53,8 +53,8 @@ http {
       proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
       proxy_http_version 1.1;
 
+      # CRITICAL: Proxmox must see its own host
       proxy_set_header Host ${UPSTREAM_HOST};
-      proxy_set_header Accept-Encoding "";
 
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -63,13 +63,16 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
+      # Disable compression so sub_filter can work on ext-all.js etc.
+      proxy_set_header Accept-Encoding "";
+
       proxy_cookie_path / "$ingress_path/";
 
       proxy_redirect /pve2/ $ingress_path/pve2/;
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # During debugging: avoid caching rewritten JS
+      # While debugging: do not cache rewritten JS
       add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
       add_header Pragma "no-cache" always;
       expires -1;
@@ -87,13 +90,16 @@ http {
       sub_filter "'/pwt/"  "'$ingress_path/pwt/";
       sub_filter "'/api2/" "'$ingress_path/api2/";
 
-      # Catch unquoted /api2/ (ExtJS sometimes emits this form)
+      # IMPORTANT:
+      # Catch unquoted /api2/ and /pve2/
+      # (ExtJS sometimes emits these without quotes)
       sub_filter '/api2/' '$ingress_path/api2/';
+      sub_filter '/pve2/' '$ingress_path/pve2/';
+      sub_filter '/pwt/'  '$ingress_path/pwt/';
     }
 
     #
-    # 3) Everything else (HTML + misc)
-    #    - This is where we fix root assets like /qrcode.min.js
+    # Everything else (HTML + misc)
     #
     location / {
       set $ingress_path $http_x_ingress_path;
@@ -101,7 +107,7 @@ http {
       proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
       proxy_http_version 1.1;
 
-      # CRITICAL: Proxmox must see its own Host, not the public hostname
+      # CRITICAL: Proxmox must see its own host
       proxy_set_header Host ${UPSTREAM_HOST};
 
       proxy_set_header X-Real-IP $remote_addr;
@@ -111,7 +117,7 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # Disable compression so sub_filter can work reliably
+      # Disable compression so sub_filter can work
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
@@ -120,7 +126,7 @@ http {
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # During debugging: avoid caching rewritten HTML
+      # While debugging: do not cache rewritten HTML
       add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
       add_header Pragma "no-cache" always;
       expires -1;
@@ -128,25 +134,26 @@ http {
       sub_filter_once off;
 
       # IMPORTANT:
-      # Only apply sub_filter to HTML here.
-      # JS/CSS are handled by the dedicated location above.
+      # Only rewrite HTML here. JS/CSS are handled above.
       sub_filter_types text/html;
 
       # Generic root rewrite (fixes /qrcode.min.js, /favicon.ico, etc.)
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
 
-      # Also rewrite API paths if they appear in HTML
-      sub_filter '"/api2/' '"$ingress_path/api2/';
-      sub_filter "'/api2/" "'$ingress_path/api2/";
-      sub_filter '/api2/'  '$ingress_path/api2/';
-
-      # Rewrite main Proxmox paths in HTML
+      # Rewrite Proxmox paths in HTML (quoted)
       sub_filter '"/pve2/' '"$ingress_path/pve2/';
       sub_filter "'/pve2/" "'$ingress_path/pve2/";
+      sub_filter '"/pwt/'  '"$ingress_path/pwt/';
+      sub_filter "'/pwt/"  "'$ingress_path/pwt/";
 
-      sub_filter '"/pwt/' '"$ingress_path/pwt/';
-      sub_filter "'/pwt/" "'$ingress_path/pwt/";
+      sub_filter '"/api2/' '"$ingress_path/api2/';
+      sub_filter "'/api2/" "'$ingress_path/api2/";
+
+      # Rewrite Proxmox paths in HTML (unquoted)
+      sub_filter '/api2/' '$ingress_path/api2/';
+      sub_filter '/pve2/' '$ingress_path/pve2/';
+      sub_filter '/pwt/'  '$ingress_path/pwt/';
     }
   }
 }
