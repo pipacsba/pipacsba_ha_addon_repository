@@ -32,7 +32,7 @@ http {
   }
 
   server {
-      listen ${INGRESS_PORT};
+      listen 8098;
       
       location / {
         # Capture the Ingress path prefix (e.g., /api/hassio_ingress/TOKEN)
