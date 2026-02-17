@@ -12,16 +12,12 @@ else
     export UPSTREAM_SCHEME="http"
 fi
 
-# Fixed: Use Supervisor API to get the port and parse with standard jq
-export INGRESS_PORT=$(bashio::api.supervisor GET /addons/self/info | jq -r '.data.ingress_port')
-
 bashio::log.info "Proxmox upstream: ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT}"
-bashio::log.info "Ingress listening on port: ${INGRESS_PORT}"
 
 mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy
 
 # Template the nginx config
-envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${UPSTREAM_SCHEME} ${INGRESS_PORT}' \
+envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${UPSTREAM_SCHEME}'\
     < /etc/nginx/nginx.conf.template > /tmp/nginx.conf
 
 echo "[INFO] Generated nginx config:"
