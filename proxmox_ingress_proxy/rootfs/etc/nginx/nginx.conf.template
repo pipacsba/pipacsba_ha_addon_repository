@@ -47,12 +47,13 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # --- ADD THESE LINES TO FIX 404s ---
-      # Disable compression so Nginx can search/replace the text content
+      # --- REQUIRED FOR SUB_FILTER TO WORK ---
+      # Disable compression so Nginx can modify the text content
       proxy_set_header Accept-Encoding ""; 
       
       sub_filter_once off;
-      sub_filter_types text/html text/javascript text/css;
+      # Apply to HTML, CSS, and Javascript
+      sub_filter_types text/html text/javascript application/javascript text/css;
       
       # Rewrite absolute paths to relative paths
       sub_filter 'href="/' 'href="./';
@@ -60,7 +61,8 @@ http {
       sub_filter '"/pve2/' '"./pve2/';
       sub_filter '"/api2/' '"./api2/';
       sub_filter '"/pwt/' '"./pwt/';
-      # ------------------------------------
+      sub_filter '"/proxmoxlib.js' '"./proxmoxlib.js';
+      # ---------------------------------------
     }
   }
 }
