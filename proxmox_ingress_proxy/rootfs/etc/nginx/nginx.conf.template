@@ -33,39 +33,46 @@ http {
 
   server {
       listen 8098;
-      
-location / {
-      set $ingress_path $http_x_ingress_path;
 
-      proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
+      # --- NEW: Block Proxmox Service Worker ---
+      # This prevents the browser from registering the "hijacker"
+      location ~* proxmox-service-worker.js {
+        return 404;
+      }
 
-      # Disable compression so Nginx can search/replace strings
-      proxy_set_header Accept-Encoding ""; 
 
-      # Fix Cookie and Redirect paths for the subpath
-      proxy_cookie_path / "$ingress_path/";
-      proxy_redirect / "$ingress_path/";
-
-      sub_filter_once off;
-      # ADD application/javascript HERE
-      sub_filter_types text/html text/javascript application/javascript text/css;
-      
-      # Comprehensive rewrites for all Proxmox asset paths
-      sub_filter 'href="/' 'href="$ingress_path/';
-      sub_filter 'src="/' 'src="$ingress_path/';
-      sub_filter '"/pve2/' '"$ingress_path/pve2/';
-      sub_filter '"/api2/' '"$ingress_path/api2/';
-      sub_filter '"/pwt/' '"$ingress_path/pwt/';
-      sub_filter '"/proxmoxlib.js' '"$ingress_path/proxmoxlib.js';
-      
-      # Specifically target API calls inside Javascript files
-      sub_filter "'/pve2/" "'$ingress_path/pve2/";
-      sub_filter "'/api2/" "'$ingress_path/api2/";
-    }
+      location / {
+          set $ingress_path $http_x_ingress_path;
+    
+          proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+    
+          # Disable compression so Nginx can search/replace strings
+          proxy_set_header Accept-Encoding ""; 
+    
+          # Fix Cookie and Redirect paths for the subpath
+          proxy_cookie_path / "$ingress_path/";
+          proxy_redirect / "$ingress_path/";
+    
+          sub_filter_once off;
+          # ADD application/javascript HERE
+          sub_filter_types text/html text/javascript application/javascript text/css;
+          
+          # Comprehensive rewrites for all Proxmox asset paths
+          sub_filter 'href="/' 'href="$ingress_path/';
+          sub_filter 'src="/' 'src="$ingress_path/';
+          sub_filter '"/pve2/' '"$ingress_path/pve2/';
+          sub_filter '"/api2/' '"$ingress_path/api2/';
+          sub_filter '"/pwt/' '"$ingress_path/pwt/';
+          sub_filter '"/proxmoxlib.js' '"$ingress_path/proxmoxlib.js';
+          
+          # Specifically target API calls inside Javascript files
+          sub_filter "'/pve2/" "'$ingress_path/pve2/";
+          sub_filter "'/api2/" "'$ingress_path/api2/";
+      }
   }
 }
