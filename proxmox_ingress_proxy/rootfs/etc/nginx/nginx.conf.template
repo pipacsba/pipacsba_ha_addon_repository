@@ -46,6 +46,21 @@ http {
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
+
+      # --- ADD THESE LINES TO FIX 404s ---
+      # Disable compression so Nginx can search/replace the text content
+      proxy_set_header Accept-Encoding ""; 
+      
+      sub_filter_once off;
+      sub_filter_types text/html text/javascript text/css;
+      
+      # Rewrite absolute paths to relative paths
+      sub_filter 'href="/' 'href="./';
+      sub_filter 'src="/' 'src="./';
+      sub_filter '"/pve2/' '"./pve2/';
+      sub_filter '"/api2/' '"./api2/';
+      sub_filter '"/pwt/' '"./pwt/';
+      # ------------------------------------
     }
   }
 }
