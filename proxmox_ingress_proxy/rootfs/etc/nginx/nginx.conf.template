@@ -34,45 +34,35 @@ http {
   server {
       listen 8098;
 
-      # --- NEW: Block Proxmox Service Worker ---
-      # This prevents the browser from registering the "hijacker"
+      # Block Proxmox Service Worker(s)
+      # Prevents the browser from registering the "hijacker"
       location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
           return 404;
       }
 
-
       location / {
           set $ingress_path $http_x_ingress_path;
-    
+
           proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
           proxy_http_version 1.1;
-          proxy_set_header Host $host;
+
+          # IMPORTANT:
+          # Do NOT forward the public hostname (pipacsba.no-ip.info) to Proxmox.
+          # Proxmox generates URLs based on Host, and this breaks subpath proxying.
+          proxy_set_header Host ${UPSTREAM_HOST};
+
           proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+
           proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
-    
-          # Disable compression so Nginx can search/replace strings
-          proxy_set_header Accept-Encoding ""; 
-    
-          # Fix Cookie and Redirect paths for the subpath
+          proxy_set_header Connection $connection_upgrade;
+
+          # Disable compression so Nginx can sub_filter JS files (ext-all.js etc.)
+          proxy_set_header Accept-Encoding "";
+
+          # Fix Cookie paths for the subpath
           proxy_cookie_path / "$ingress_path/";
-          proxy_redirect / "$ingress_path/";
-    
-          sub_filter_once off;
-          # ADD application/javascript HERE
-          sub_filter_types text/html text/javascript application/javascript text/css;
-          
-          # Comprehensive rewrites for all Proxmox asset paths
-          sub_filter 'href="/' 'href="$ingress_path/';
-          sub_filter 'src="/' 'src="$ingress_path/';
-          sub_filter '"/pve2/' '"$ingress_path/pve2/';
-          sub_filter '"/api2/' '"$ingress_path/api2/';
-          sub_filter '"/pwt/' '"$ingress_path/pwt/';
-          sub_filter '"/proxmoxlib.js' '"$ingress_path/proxmoxlib.js';
-          
-          # Specifically target API calls inside Javascript files
-          sub_filter "'/pve2/" "'$ingress_path/pve2/";
-          sub_filter "'/api2/" "'$ingress_path/api2/";
-      }
-  }
-}
+
+          # Fix redirects from upstream (Location: /pve2/ , /api2/ , / )
+          proxy_redirect /pve2/ $ingress_path/pve2/;
