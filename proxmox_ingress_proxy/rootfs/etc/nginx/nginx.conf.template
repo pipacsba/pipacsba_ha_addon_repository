@@ -31,15 +31,18 @@ http {
   server {
     listen 8098;
 
+    #####################################################################
     # Block Proxmox service worker
+    #####################################################################
     location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
       return 404;
     }
 
     #####################################################################
-    # Patch ALL JavaScript files (but ONLY /api2/json and /api2/extjs)
+    # Patch ONLY proxmoxlib.js + pvemanagerlib.js
+    # (This is enough to fix /api2/json/access/domains + ticket)
     #####################################################################
-    location ~* \.js$ {
+    location ~* ^/(proxmoxlib\.js|pvemanagerlib\.js)$ {
       set $ingress_path $http_x_ingress_path;
 
       proxy_pass https://192.168.17.13:8006;
@@ -77,7 +80,7 @@ http {
     }
 
     #####################################################################
-    # Everything else
+    # Everything else (HTML, CSS, images, other JS, fonts, etc.)
     #####################################################################
     location / {
       set $ingress_path $http_x_ingress_path;
@@ -104,7 +107,7 @@ http {
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # only patch HTML
+      # only patch HTML so assets load through ingress path
       sub_filter_once off;
       sub_filter_types text/html;
 
