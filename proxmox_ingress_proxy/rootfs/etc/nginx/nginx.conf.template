@@ -36,7 +36,11 @@ http {
       return 404;
     }
 
-    location ^~ /pve2/ {
+    #
+    # IMPORTANT:
+    # Rewrite /api2/ inside ANY JS file (proxmoxlib.js is at /proxmoxlib.js)
+    #
+    location ~* \.js$ {
       set $ingress_path $http_x_ingress_path;
 
       proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
@@ -50,7 +54,7 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # needed so JS can be rewritten
+      # required for sub_filter
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
@@ -59,7 +63,6 @@ http {
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # Rewrite absolute API calls inside JS
       sub_filter_once off;
       sub_filter_types application/javascript text/javascript;
 
@@ -69,7 +72,9 @@ http {
       add_header Cache-Control "no-store" always;
     }
 
-
+    #
+    # Everything else (HTML + CSS + images + etc.)
+    #
     location / {
       set $ingress_path $http_x_ingress_path;
 
@@ -84,25 +89,21 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # We must disable gzip so HTML can be rewritten
       proxy_set_header Accept-Encoding "";
 
-      # Cookies must be rewritten for ingress
       proxy_cookie_path / "$ingress_path/";
 
-      # Redirect fixes
       proxy_redirect /pve2/ $ingress_path/pve2/;
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # Only rewrite HTML (do not touch JS/CSS)
+      # Only rewrite HTML
       sub_filter_once off;
       sub_filter_types text/html;
 
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
 
-      # avoid cache while testing
       add_header Cache-Control "no-store" always;
     }
   }
