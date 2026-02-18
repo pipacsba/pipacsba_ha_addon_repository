@@ -18,6 +18,7 @@ http {
 
   client_max_body_size 100m;
 
+  # Writable temp paths (HA addon container)
   client_body_temp_path /tmp/nginx/client_body;
   proxy_temp_path       /tmp/nginx/proxy;
 
@@ -31,22 +32,25 @@ http {
   server {
     listen 8098;
 
-    # Block Proxmox Service Worker (critical)
+    #####################################################################
+    # 1) Block Proxmox service worker
+    #####################################################################
     location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
       return 404;
     }
 
-    #
-    # IMPORTANT:
-    # Rewrite /api2/ inside ANY JS file (proxmoxlib.js is at /proxmoxlib.js)
-    #
+    #####################################################################
+    # 2) Patch ALL JavaScript (this is where the API base is defined)
+    #####################################################################
     location ~* \.js$ {
       set $ingress_path $http_x_ingress_path;
 
       proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
       proxy_http_version 1.1;
 
+      # Proxmox must see its own host
       proxy_set_header Host ${UPSTREAM_HOST};
+
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
@@ -54,7 +58,7 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # required for sub_filter
+      # required for sub_filter to work
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
@@ -66,15 +70,27 @@ http {
       sub_filter_once off;
       sub_filter_types application/javascript text/javascript;
 
+      #
+      # CRITICAL FIX:
+      # Rewrite the API root itself (this fixes /api2/json/access/domains)
+      #
+      sub_filter '"/api2/json' '"$ingress_path/api2/json';
+      sub_filter "'/api2/json" "'$ingress_path/api2/json";
+      sub_filter '`/api2/json' '`$ingress_path/api2/json';
+
+      #
+      # Also rewrite any remaining /api2/
+      #
       sub_filter '"/api2/' '"$ingress_path/api2/';
       sub_filter "'/api2/" "'$ingress_path/api2/";
+      sub_filter '/api2/'  '$ingress_path/api2/';
 
       add_header Cache-Control "no-store" always;
     }
 
-    #
-    # Everything else (HTML + CSS + images + etc.)
-    #
+    #####################################################################
+    # 3) Everything else (HTML, CSS, images, fonts, etc.)
+    #####################################################################
     location / {
       set $ingress_path $http_x_ingress_path;
 
@@ -82,6 +98,7 @@ http {
       proxy_http_version 1.1;
 
       proxy_set_header Host ${UPSTREAM_HOST};
+
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
@@ -89,6 +106,7 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
+      # also disable compression here (HTML rewriting)
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
@@ -97,7 +115,9 @@ http {
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # Only rewrite HTML
+      #
+      # Rewrite only HTML, so Proxmox assets load via ingress subpath
+      #
       sub_filter_once off;
       sub_filter_types text/html;
 
