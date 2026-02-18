@@ -2,7 +2,7 @@ user root;
 worker_processes 1;
 pid /tmp/nginx.pid;
 
-error_log /dev/stderr warn;
+error_log /dev/stderr info;
 
 events {
   worker_connections 1024;
@@ -20,9 +20,6 @@ http {
 
   client_body_temp_path /tmp/nginx/client_body;
   proxy_temp_path       /tmp/nginx/proxy;
-  fastcgi_temp_path     /tmp/nginx/fastcgi;
-  uwsgi_temp_path       /tmp/nginx/uwsgi;
-  scgi_temp_path        /tmp/nginx/scgi;
 
   access_log /dev/stdout;
 
@@ -34,95 +31,18 @@ http {
   server {
     listen 8098;
 
-    #
-    # Block Proxmox Service Worker(s)
-    #
+    # Block Proxmox Service Worker (critical)
     location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
       return 404;
     }
 
-    #
-    # Fix broken ExtJS class loader paths:
-    # /PVE/... -> /pve2/js/PVE/...
-    #
-    location ^~ /PVE/ {
-      set $ingress_path $http_x_ingress_path;
-
-      proxy_pass https://192.168.17.13:8006/pve2/js/PVE/;
-      proxy_http_version 1.1;
-
-      proxy_set_header Host 192.168.17.13;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-
-      proxy_set_header Accept-Encoding "";
-      proxy_cookie_path / "$ingress_path/";
-
-      proxy_redirect /pve2/ $ingress_path/pve2/;
-      proxy_redirect /api2/ $ingress_path/api2/;
-      proxy_redirect / $ingress_path/;
-
-      add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
-      add_header Pragma "no-cache" always;
-      expires -1;
-    }
-
-    #
-    # JS + CSS
-    #
-    location ~* \.(js|css)$ {
-      set $ingress_path $http_x_ingress_path;
-
-      proxy_pass https://192.168.17.13:8006;
-      proxy_http_version 1.1;
-
-      proxy_set_header Host 192.168.17.13;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
-
-      proxy_set_header Accept-Encoding "";
-
-      proxy_cookie_path / "$ingress_path/";
-
-      proxy_redirect /pve2/ $ingress_path/pve2/;
-      proxy_redirect /api2/ $ingress_path/api2/;
-      proxy_redirect / $ingress_path/;
-
-      add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
-      add_header Pragma "no-cache" always;
-      expires -1;
-
-      sub_filter_once off;
-      sub_filter_types text/javascript application/javascript text/css;
-
-      sub_filter '"/pve2/' '"$ingress_path/pve2/';
-      sub_filter '"/pwt/'  '"$ingress_path/pwt/';
-      sub_filter '"/api2/' '"$ingress_path/api2/';
-
-      sub_filter "'/pve2/" "'$ingress_path/pve2/";
-      sub_filter "'/pwt/"  "'$ingress_path/pwt/";
-      sub_filter "'/api2/" "'$ingress_path/api2/";
-
-      sub_filter '/api2/' '$ingress_path/api2/';
-      sub_filter '/pve2/' '$ingress_path/pve2/';
-      sub_filter '/pwt/'  '$ingress_path/pwt/';
-    }
-
-    #
-    # Everything else (HTML + misc)
-    #
     location / {
       set $ingress_path $http_x_ingress_path;
 
-      proxy_pass https://192.168.17.13:8006;
+      proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
       proxy_http_version 1.1;
 
-      proxy_set_header Host 192.168.17.13;
+      proxy_set_header Host ${UPSTREAM_HOST};
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
@@ -130,36 +50,26 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
+      # We must disable gzip so HTML can be rewritten
       proxy_set_header Accept-Encoding "";
 
+      # Cookies must be rewritten for ingress
       proxy_cookie_path / "$ingress_path/";
 
+      # Redirect fixes
       proxy_redirect /pve2/ $ingress_path/pve2/;
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
-      add_header Pragma "no-cache" always;
-      expires -1;
-
+      # Only rewrite HTML (do not touch JS/CSS)
       sub_filter_once off;
       sub_filter_types text/html;
 
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
 
-      sub_filter '"/pve2/' '"$ingress_path/pve2/';
-      sub_filter "'/pve2/" "'$ingress_path/pve2/";
-
-      sub_filter '"/pwt/'  '"$ingress_path/pwt/';
-      sub_filter "'/pwt/"  "'$ingress_path/pwt/";
-
-      sub_filter '"/api2/' '"$ingress_path/api2/';
-      sub_filter "'/api2/" "'$ingress_path/api2/";
-
-      sub_filter '/api2/' '$ingress_path/api2/';
-      sub_filter '/pve2/' '$ingress_path/pve2/';
-      sub_filter '/pwt/'  '$ingress_path/pwt/';
+      # avoid cache while testing
+      add_header Cache-Control "no-store" always;
     }
   }
 }
