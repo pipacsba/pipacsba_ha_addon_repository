@@ -40,9 +40,9 @@ http {
 
     #####################################################################
     # Patch ONLY proxmoxlib.js + pvemanagerlib.js
-    # (This is enough to fix /api2/json/access/domains + ticket)
+    # (both root and /pve2/js/ variants)
     #####################################################################
-    location ~* ^/(proxmoxlib\.js|pvemanagerlib\.js)$ {
+    location ~* ^/(proxmoxlib\.js|pvemanagerlib\.js|pve2/js/proxmoxlib\.js|pve2/js/pvemanagerlib\.js)$ {
       set $ingress_path $http_x_ingress_path;
 
       proxy_pass https://192.168.17.13:8006;
@@ -55,7 +55,6 @@ http {
 
       proxy_ssl_verify off;
 
-      # required for sub_filter
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
@@ -80,7 +79,7 @@ http {
     }
 
     #####################################################################
-    # Everything else (HTML, CSS, images, other JS, fonts, etc.)
+    # Everything else
     #####################################################################
     location / {
       set $ingress_path $http_x_ingress_path;
@@ -107,7 +106,6 @@ http {
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # only patch HTML so assets load through ingress path
       sub_filter_once off;
       sub_filter_types text/html;
 
