@@ -64,14 +64,12 @@ http {
       sub_filter_once off;
       sub_filter_types application/javascript text/javascript;
 
-      # Rewrite ONLY the API roots
+      # Rewrite ONLY root API paths (prevents double-ingress)
       sub_filter '"/api2/json'  '"$ingress_path/api2/json';
       sub_filter "'/api2/json"  "'$ingress_path/api2/json";
-      sub_filter '`/api2/json'  '`$ingress_path/api2/json';
 
       sub_filter '"/api2/extjs' '"$ingress_path/api2/extjs';
       sub_filter "'/api2/extjs" "'$ingress_path/api2/extjs";
-      sub_filter '`/api2/extjs' '`$ingress_path/api2/extjs';
 
       add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
       add_header Pragma "no-cache" always;
