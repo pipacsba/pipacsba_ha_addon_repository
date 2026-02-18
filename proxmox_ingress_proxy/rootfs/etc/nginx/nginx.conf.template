@@ -64,9 +64,7 @@ http {
       sub_filter_once off;
       sub_filter_types application/javascript text/javascript;
 
-      ###################################################################
-      # 1) Rewrite API ROOTS (this fixes /api2/json/access/domains)
-      ###################################################################
+      # Rewrite ONLY the API roots
       sub_filter '"/api2/json'  '"$ingress_path/api2/json';
       sub_filter "'/api2/json"  "'$ingress_path/api2/json";
       sub_filter '`/api2/json'  '`$ingress_path/api2/json';
@@ -74,26 +72,6 @@ http {
       sub_filter '"/api2/extjs' '"$ingress_path/api2/extjs';
       sub_filter "'/api2/extjs" "'$ingress_path/api2/extjs";
       sub_filter '`/api2/extjs' '`$ingress_path/api2/extjs';
-
-      ###################################################################
-      # 2) Rewrite RELATIVE API paths (prevents double-ingress)
-      #
-      # Proxmox sometimes builds URLs like:
-      #   baseUrl = "/access/ticket"
-      # and then prepends "/api2/extjs"
-      #
-      # If ingress already rewrote "/api2/extjs", this can become:
-      #   .../api2/extjs/.../api2/extjs/access/ticket
-      #
-      # So we normalize the relative paths directly.
-      ###################################################################
-      sub_filter '"/access/'  '"$ingress_path/api2/extjs/access/';
-      sub_filter "'/access/"  "'$ingress_path/api2/extjs/access/";
-      sub_filter '`/access/'  '`$ingress_path/api2/extjs/access/';
-
-      sub_filter '"/nodes/'   '"$ingress_path/api2/extjs/nodes/';
-      sub_filter "'/nodes/"   "'$ingress_path/api2/extjs/nodes/";
-      sub_filter '`/nodes/'   '`$ingress_path/api2/extjs/nodes/';
 
       add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
       add_header Pragma "no-cache" always;
