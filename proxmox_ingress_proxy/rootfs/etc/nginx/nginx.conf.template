@@ -18,7 +18,6 @@ http {
 
   client_max_body_size 100m;
 
-  # Writable temp paths (HA addon container)
   client_body_temp_path /tmp/nginx/client_body;
   proxy_temp_path       /tmp/nginx/proxy;
 
@@ -32,93 +31,63 @@ http {
   server {
     listen 8098;
 
-    #####################################################################
-    # 0) Block Proxmox Service Worker (CRITICAL)
-    #####################################################################
+    # Block Proxmox service worker
     location ~* /(sw-modern\.js|sw-legacy\.js|sw\.js|proxmox-service-worker\.js)$ {
       return 404;
     }
 
     #####################################################################
-    # 1) Patch ALL JavaScript
-    #    - Fix /api2/... absolute calls
-    #    - Fix ExtJS baseUrl/storeBaseUrl: '/access/...'
+    # Patch ALL JavaScript files (but ONLY /api2/json and /api2/extjs)
     #####################################################################
     location ~* \.js$ {
       set $ingress_path $http_x_ingress_path;
 
-      proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
+      proxy_pass https://192.168.17.13:8006;
       proxy_http_version 1.1;
 
-      # Proxmox must see its own host, NOT the public one
-      proxy_set_header Host ${UPSTREAM_HOST};
-
+      proxy_set_header Host 192.168.17.13;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
 
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
+      proxy_ssl_verify off;
 
       # required for sub_filter
       proxy_set_header Accept-Encoding "";
 
-      # cookies + redirects for subpath
       proxy_cookie_path / "$ingress_path/";
+
       proxy_redirect /pve2/ $ingress_path/pve2/;
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # Patch JS
       sub_filter_once off;
       sub_filter_types application/javascript text/javascript;
 
-      #
-      # A) Rewrite absolute /api2/...
-      #
-      sub_filter '"/api2/' '"$ingress_path/api2/';
-      sub_filter "'/api2/" "'$ingress_path/api2/";
-      sub_filter '`/api2/' '`$ingress_path/api2/';
+      # Rewrite ONLY the API roots
+      sub_filter '"/api2/json'  '"$ingress_path/api2/json';
+      sub_filter "'/api2/json"  "'$ingress_path/api2/json";
+      sub_filter '`/api2/json'  '`$ingress_path/api2/json';
 
-      #
-      # B) Rewrite ExtJS dynamic API base:
-      #    baseUrl: '/access/domains'
-      #    storeBaseUrl: '/access/domains'
-      #
-      # -> must become:
-      #    baseUrl: '$ingress_path/api2/extjs/access/domains'
-      #
-      sub_filter "baseUrl: '/"      "baseUrl: '$ingress_path/api2/extjs/";
-      sub_filter "baseUrl:\"/"      "baseUrl:\"$ingress_path/api2/extjs/";
-      sub_filter "storeBaseUrl: '/" "storeBaseUrl: '$ingress_path/api2/extjs/";
-      sub_filter "storeBaseUrl:\"/" "storeBaseUrl:\"$ingress_path/api2/extjs/";
+      sub_filter '"/api2/extjs' '"$ingress_path/api2/extjs';
+      sub_filter "'/api2/extjs" "'$ingress_path/api2/extjs";
+      sub_filter '`/api2/extjs' '`$ingress_path/api2/extjs';
 
-      #
-      # C) Some parts use:
-      #    url: '/access/domains'
-      # or template strings:
-      #    `/access/domains/${realm}/sync`
-      #
-      sub_filter "url: '/"  "url: '$ingress_path/api2/extjs/";
-      sub_filter "url:\"/"  "url:\"$ingress_path/api2/extjs/";
-      sub_filter "url: `/"  "url: `$ingress_path/api2/extjs/";
-      sub_filter "url:`/"   "url:`$ingress_path/api2/extjs/";
-
-      # avoid caching while testing
-      add_header Cache-Control "no-store" always;
+      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+      add_header Pragma "no-cache" always;
+      expires -1;
     }
 
     #####################################################################
-    # 2) Everything else (HTML, CSS, images, fonts, etc.)
-    #    Only rewrite HTML so it loads assets from ingress subpath.
+    # Everything else
     #####################################################################
     location / {
       set $ingress_path $http_x_ingress_path;
 
-      proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
+      proxy_pass https://192.168.17.13:8006;
       proxy_http_version 1.1;
 
-      proxy_set_header Host ${UPSTREAM_HOST};
+      proxy_set_header Host 192.168.17.13;
 
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -127,22 +96,26 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
 
-      # required for sub_filter
+      proxy_ssl_verify off;
+
       proxy_set_header Accept-Encoding "";
 
       proxy_cookie_path / "$ingress_path/";
+
       proxy_redirect /pve2/ $ingress_path/pve2/;
       proxy_redirect /api2/ $ingress_path/api2/;
       proxy_redirect / $ingress_path/;
 
-      # Only rewrite HTML
+      # only patch HTML
       sub_filter_once off;
       sub_filter_types text/html;
 
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
 
-      add_header Cache-Control "no-store" always;
+      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+      add_header Pragma "no-cache" always;
+      expires -1;
     }
   }
 }
