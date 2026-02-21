@@ -1,4 +1,8 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+
+## 1.5.0
+   - correct playtime activities config
+
 ## 1.4.2
    - MQTT publish of user usage in every cycle
 
