@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: TimeKpr-Mngr
-version: "1.4.2_apparmor3"
+version: "1.5.0"
 slug: timekpr_mngr
 description: Allows remote control of timekpr instances
 stage: stable
