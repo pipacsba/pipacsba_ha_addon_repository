@@ -44,7 +44,7 @@ http {
         # ----------------------------
         location /api2/json/nodes/ {
 
-            proxy_pass https://PROXMOX_IP:8006;
+            proxy_pass https://192.168.17.13:8006;
             proxy_ssl_verify off;
 
             proxy_http_version 1.1;
