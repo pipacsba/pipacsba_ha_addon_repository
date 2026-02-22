@@ -20,7 +20,10 @@ http {
 
         # Ingress prefix from Home Assistant
         set $ingress_path $http_x_ingress_path;
-
+        # Ensure ingress path always ends with /
+        if ($ingress_path !~ /$) {
+            set $ingress_path "${ingress_path}/";
+        }
 
 
         location / {
