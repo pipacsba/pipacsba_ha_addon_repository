@@ -1,7 +1,7 @@
 name: Proxmox Ingress Proxy
 slug: proxmox_ingress_proxy
 description: "Ingress proxy to an external proxmox instance"
-version: "0.0.52"
+version: "0.0.53"
 arch:
   - amd64
   - aarch64
