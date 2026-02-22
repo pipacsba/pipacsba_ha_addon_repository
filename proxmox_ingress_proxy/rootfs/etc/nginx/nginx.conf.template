@@ -21,11 +21,12 @@ http {
         # Ingress prefix from Home Assistant
         set $ingress_path $http_x_ingress_path;
 
-        # Force proxmox to send uncompressed responses
-        # (otherwise sub_filter does not work reliably)
-        proxy_set_header Accept-Encoding "";
+
 
         location / {
+            # Force proxmox to send uncompressed responses
+            # (otherwise sub_filter does not work reliably)
+            proxy_set_header Accept-Encoding "";
 
             proxy_pass https://192.168.17.13:8006;
 
