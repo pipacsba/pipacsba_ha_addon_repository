@@ -112,8 +112,8 @@ http {
 
       sub_filter 'src="/'  'src="$ingress_path/';
       sub_filter 'href="/' 'href="$ingress_path/';
-      sub_filter "baseurl: '/'"  "baseurl: '$ingress_path/'";
-      sub_filter 'baseurl:"/"'   'baseurl:"$ingress_path/"';
+      #sub_filter "baseurl: '/'"  "baseurl: '$ingress_path/'";
+      #sub_filter 'baseurl:"/"'   'baseurl:"$ingress_path/"';
 
       add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
       add_header Pragma "no-cache" always;
