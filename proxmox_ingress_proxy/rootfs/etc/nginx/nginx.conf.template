@@ -57,36 +57,23 @@ http {
 
             sub_filter_once off;
 
-            # Only rewrite text-like content
             sub_filter_types
-                text/html
                 text/css
                 application/javascript
                 application/json;
 
-            #
             # 1. Absolute asset paths
-            #
-            sub_filter 'href="/pve2/' 'href="'$ingress_path'pve2/';
-            sub_filter 'src="/pve2/'  'src="'$ingress_path'pve2/';
-            sub_filter '"/pve2/'      '"'$ingress_path'pve2/';
+            sub_filter 'href="/pve2/'  "href=\"${ingress_path}pve2/";
+            sub_filter 'src="/pve2/'   "src=\"${ingress_path}pve2/";
+            sub_filter '"/pve2/'       "\"${ingress_path}pve2/";
 
-            #
             # 2. API calls
-            #
-            sub_filter '"/api2/'      '"'$ingress_path'api2/';
-            sub_filter "'/api2/"      "'$ingress_path"api2/";
+            sub_filter '"/api2/'       "\"${ingress_path}api2/";
+            sub_filter "'/api2/"       "'${ingress_path}api2/";
 
-            #
-            # 3. WebSocket paths
-            #
-            sub_filter '"/api2/json/nodes/' '"'$ingress_path'api2/json/nodes/';
-
-            #
-            # 4. Root references (careful, avoid double rewriting)
-            #
-            sub_filter 'href="/' 'href="'$ingress_path;
-            sub_filter 'src="/'  'src="'$ingress_path;
+            # 3. Root references
+            sub_filter 'href="/'       "href=\"${ingress_path}";
+            sub_filter 'src="/'        "src=\"${ingress_path}";
 
         }
     }
