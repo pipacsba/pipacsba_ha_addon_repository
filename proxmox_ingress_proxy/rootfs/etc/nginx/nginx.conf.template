@@ -87,13 +87,10 @@ http {
 
         location / {
             # Force proxmox to send uncompressed responses
-            # (otherwise sub_filter does not work reliably)
             proxy_set_header Accept-Encoding "";
 
             proxy_pass https://192.168.17.13:8006;
-
             proxy_ssl_verify off;
-
             proxy_http_version 1.1;
 
             proxy_set_header Host $host;
@@ -115,29 +112,28 @@ http {
             proxy_cookie_path / $ingress_path;
 
             # -------------------------------------------------
-            # RESPONSE REWRITES (critical part)
+            # IMPROVED RESPONSE REWRITES
             # -------------------------------------------------
-
             sub_filter_once off;
-
-            sub_filter_types
-                text/css
-                application/javascript
-                application/json;
+            sub_filter_types text/css application/javascript application/json;
 
             # 1. Absolute asset paths
             sub_filter 'href="/pve2/'  "href=\"${ingress_path}pve2/";
             sub_filter 'src="/pve2/'   "src=\"${ingress_path}pve2/";
             sub_filter '"/pve2/'       "\"${ingress_path}pve2/";
 
-            # 2. API calls
+            # 2. Improved API calls (Added /json and variation without trailing slash)
             sub_filter '"/api2/'       "\"${ingress_path}api2/";
             sub_filter "'/api2/"       "'${ingress_path}api2/";
+            sub_filter "'/api2/json"   "'${ingress_path}api2/json";
+            sub_filter '"/api2/json'   "\"${ingress_path}api2/json";
 
-            # 3. Root references
+            # 3. Root references (Ensuring trailing slash consistency)
             sub_filter 'href="/'       "href=\"${ingress_path}";
             sub_filter 'src="/'        "src=\"${ingress_path}";
-
+            
+            # 4. Catch the specific problematic PVE paths
+            sub_filter '"/proxmoxlib.js' "\"${ingress_path}proxmoxlib.js";
         }
     }
 }
