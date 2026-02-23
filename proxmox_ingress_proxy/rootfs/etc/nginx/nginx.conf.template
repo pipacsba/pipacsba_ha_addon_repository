@@ -23,6 +23,11 @@ http {
         # Required for large uploads (ISO etc.)
         client_max_body_size 0;
 
+        # Enable logging for rewrite rules
+        # This will show you in the HA logs how the URI is changing
+        error_log /dev/stderr notice; 
+        rewrite_log on;
+
         # Ingress prefix from Home Assistant
         set $ingress_path $http_x_ingress_path;
         # Ensure ingress path always ends with /
