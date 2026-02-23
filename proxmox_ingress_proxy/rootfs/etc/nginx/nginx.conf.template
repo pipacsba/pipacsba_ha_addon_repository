@@ -25,6 +25,13 @@ http {
             set $ingress_path "${ingress_path}/";
         }
 
+        # --- FIX: Remove redundant ingress path from incoming requests ---
+        # This matches the ingress path at the start of the URI and removes it
+        # to prevent double-prefixing when proxying to Proxmox.
+        rewrite ^(?<relative_uri>/api/hassio_ingress/[^/]+)(/.*)$ $2 break;
+
+
+
         #####################################################################
         # Patch ONLY proxmoxlib.js
         #####################################################################
