@@ -1,0 +1,64 @@
+#include <tunables/global>
+
+profile frigate_ingress_proxy flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  # Capabilities for S6-Overlay v3 and Nginx
+  capability setgid,
+  capability setuid,
+  capability dac_override,
+  capability dac_read_search,
+  capability net_bind_service,
+  capability chown,
+  capability fowner,
+  capability kill,
+  capability sys_ptrace,
+
+  # Network
+  network inet stream,
+  network inet6 stream,
+  network unix stream,
+
+  # Core Binaries
+  /init rix,
+  /bin/** rix,
+  /usr/bin/** rix,
+  /sbin/nginx rix,
+  /usr/sbin/nginx rix,
+  /package/** rix,
+  /command/** rix,
+  
+  # S6-Overlay Config and Runtime (Crucial)
+  /etc/s6-overlay/** r,
+  /run/ r,
+  /run/** rwkix,
+
+  # Bashio (This fixes the "unable to exec bashio" error)
+  /usr/lib/bashio/** rix,
+  /usr/bin/bashio rix,
+
+  # Addon specific
+  /run.sh rix,
+  /etc/nginx/** r,
+  /tmp/ r,
+  /tmp/** rwkix,
+  /var/lib/nginx/ r,
+  /var/lib/nginx/** rwk,
+  /var/log/nginx/ r,
+  /var/log/nginx/** rwk,
+
+  # System access
+  /dev/stdout rw,
+  /dev/stderr rw,
+  /dev/tty rw,
+  /dev/null rw,
+  /dev/random r,
+  /dev/urandom r,
+  /data/options.json r,
+
+  # Process management
+  signal (send, receive) peer=frigate_ingress_proxy,
+  signal (receive) peer=unconfined,
+  ptrace (trace) peer=unconfined,
+}

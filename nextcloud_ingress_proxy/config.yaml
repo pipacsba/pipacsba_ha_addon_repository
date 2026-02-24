@@ -1,0 +1,31 @@
+name: Nextcloud Ingress Proxy
+slug: nextcloud_ingress_proxy
+description: "Ingress proxy to an external Nextcloud instance"
+version: "0.0.1"
+arch:
+  - amd64
+  - aarch64
+
+stage: experimental
+startup: application
+boot: auto
+init: false
+
+apparmor: true
+
+ingress: true
+ingress_port: 8097
+ingress_entry: logs
+panel_icon: mdi:cctv
+
+host_network: true
+
+options:
+  upstream_host: "192.168.1.50"
+  upstream_port: 5000
+  upstream_https: false
+
+schema:
+  upstream_host: str
+  upstream_port: int
+  upstream_https: bool
