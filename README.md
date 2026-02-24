@@ -11,10 +11,10 @@ More info in the repository: [timekpr-mngr](https://github.com/pipacsba/timekpr-
 ### [timekpr_mngr_edge](./timekpr_mngr_edge)
 Same thing, but unstable (maybe don't even start)
 
-### [frigate_proxy] (./frigate_ingress_proxy)
+### [frigate_proxy](./frigate_ingress_proxy)
 If you run frigate not under home assistant umbrella, but still you would like to access it from home assistant sidebar.
 
-### [proxmox_proxy] (./frigate_ingress_proxy)
+### [proxmox_proxy](./frigate_ingress_proxy)
 *Extremely fragile thing - use it with caution.*
 If you run home assistant in a proxmox virtual machine, and you would like to access it from home assistant.  
 
