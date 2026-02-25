@@ -39,17 +39,28 @@ http {
           
           proxy_ssl_server_name on;
       
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-Host $host;
+          # Pass the full host with the port number
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Forwarded-Host $http_host;
+          
+          # Force HTTPS so Nextcloud builds secure redirect URLs
+          proxy_set_header X-Forwarded-Proto https;
+          
+          # (Keep your other headers)
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-      
           proxy_set_header X-Ingress-Path $http_x_ingress_path;
       
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection $connection_upgrade;
-      
+
+          # Rewrite absolute redirects from Nextcloud to include the HA Ingress path
+          proxy_redirect ~^https?://[^/]+/(.*)$ $http_x_ingress_path/$1;
+          
+          # Rewrite relative redirects
+          proxy_redirect / $http_x_ingress_path/;
+
+
           proxy_buffering off;
           proxy_request_buffering off;
       }
