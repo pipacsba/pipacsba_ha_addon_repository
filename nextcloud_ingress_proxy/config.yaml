@@ -1,7 +1,7 @@
 name: Nextcloud Ingress Proxy
 slug: nextcloud_ingress_proxy
 description: "Ingress proxy to an external Nextcloud instance"
-version: "0.0.6"
+version: "0.0.7"
 arch:
   - amd64
   - aarch64
