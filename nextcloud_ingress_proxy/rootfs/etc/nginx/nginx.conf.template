@@ -33,29 +33,23 @@ http {
 
   server {
       listen 8097;
-  
+
       location / {
           proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
           
-          # CRITICAL: Required for HTTPS proxying to an external domain (SNI)
           proxy_ssl_server_name on;
-          
-          # CRITICAL: Tell the target server which virtual host to serve
+      
           proxy_set_header Host $host;
-          
-          # Forward standard proxy headers
+          proxy_set_header X-Forwarded-Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_set_header X-Forwarded-Proto $scheme;
-  
-          # Forward the Home Assistant Ingress Path header
+      
           proxy_set_header X-Ingress-Path $http_x_ingress_path;
-
-          # WebSocket support (using your map block)
+      
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection $connection_upgrade;
-  
-          # Recommended Nextcloud proxy settings
+      
           proxy_buffering off;
           proxy_request_buffering off;
       }
