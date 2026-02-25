@@ -2,7 +2,6 @@ user root;
 worker_processes  1;
 pid /tmp/nginx.pid;
 
-# Move error_log to the top level to override the default path
 error_log /dev/stderr warn;
 
 events {
@@ -15,9 +14,10 @@ http {
   sendfile on;
   tcp_nopush on;
   tcp_nodelay on;
-  client_max_body_size 100m;
+  
+  # Increased for Nextcloud file uploads (0 means unlimited, or set to 512m etc.)
+  client_max_body_size 0;
 
-  # Redirect ALL temporary paths to a writable location (/tmp)
   client_body_temp_path /tmp/nginx/client_body;
   proxy_temp_path       /tmp/nginx/proxy;
   fastcgi_temp_path     /tmp/nginx/fastcgi;
@@ -32,19 +32,28 @@ http {
   }
 
   server {
-      listen 8097; # Or whatever port your add-on uses internally
+      listen 8097;
   
       location / {
           proxy_pass https://pipacsba.no-ip.info/;
           
+          # CRITICAL: Required for HTTPS proxying to an external domain (SNI)
+          proxy_ssl_server_name on;
+          
+          # CRITICAL: Tell the target server which virtual host to serve
+          proxy_set_header Host pipacsba.no-ip.info;
+          
           # Forward standard proxy headers
-          proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_set_header X-Forwarded-Proto $scheme;
   
-          # CRITICAL: Forward the Home Assistant Ingress Path header
+          # Forward the Home Assistant Ingress Path header
           proxy_set_header X-Ingress-Path $http_x_ingress_path;
+
+          # WebSocket support (using your map block)
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
   
           # Recommended Nextcloud proxy settings
           proxy_buffering off;
