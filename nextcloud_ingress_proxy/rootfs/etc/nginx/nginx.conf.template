@@ -35,13 +35,13 @@ http {
       listen 8097;
   
       location / {
-          proxy_pass https://pipacsba.no-ip.info/;
+          proxy_pass ${UPSTREAM_SCHEME}://${UPSTREAM_HOST}:${UPSTREAM_PORT};
           
           # CRITICAL: Required for HTTPS proxying to an external domain (SNI)
           proxy_ssl_server_name on;
           
           # CRITICAL: Tell the target server which virtual host to serve
-          proxy_set_header Host pipacsba.no-ip.info;
+          proxy_set_header Host $host;
           
           # Forward standard proxy headers
           proxy_set_header X-Real-IP $remote_addr;
