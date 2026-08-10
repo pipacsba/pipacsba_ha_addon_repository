@@ -14,7 +14,7 @@ init: false
 apparmor: true
 
 ingress: true
-ingress_port: 8099
+ingress_port: 8095
 ingress_entry: logs
 panel_icon: mdi:cctv
 
