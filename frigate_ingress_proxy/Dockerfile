@@ -12,6 +12,6 @@ RUN chmod +x /run.sh && \
     mkdir -p /var/lib/nginx/logs && \
     chown -R nginx:nginx /run/nginx /var/lib/nginx
 
-EXPOSE 8095
+EXPOSE 8073
 
 CMD ["/run.sh"]
