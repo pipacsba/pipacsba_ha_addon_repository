@@ -32,7 +32,7 @@ http {
   }
 
   server {
-    listen 8095;
+    listen 8073;
 
     proxy_read_timeout 3600s;
     proxy_send_timeout 3600s;
